@@ -23,7 +23,7 @@ jobs:
           node-version: '23'
 
       - name: Install dependencies
-        run: npm instal
+        run: npm install
 
       - name: Install client dependencies
         run:
