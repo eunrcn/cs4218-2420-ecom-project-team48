@@ -17,8 +17,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: client
+        working-directory: client/src
 
       - name: Run tests with Jest
         run: npm test
-        working-directory: client
+        working-directory: client/src
