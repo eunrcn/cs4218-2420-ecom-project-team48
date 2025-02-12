@@ -135,4 +135,90 @@ describe('Login Component', () => {
         await waitFor(() => expect(axios.post).toHaveBeenCalled());
         expect(toast.error).toHaveBeenCalledWith('Something went wrong');
     });
+
+    // Test for empty email field
+    it('should show an error for empty email field', async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: '' } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: 'password123' } });
+      fireEvent.click(getByText('LOGIN'));
+
+      const emailInput = getByPlaceholderText('Enter Your Email');
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          expect(emailInput).toHaveAttribute('required'); 
+      });
+    });
+
+    // Test for empty password field
+    it('should show an error for empty password field', async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'test@example.com' } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: '' } });
+      fireEvent.click(getByText('LOGIN'));
+
+      const passwordInput = getByPlaceholderText('Enter Your Password');
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          expect(passwordInput).toHaveAttribute('required'); 
+      });
+   });
+
+    // Test for navigating to forgot password page
+    it('should navigate to forgot password page', async () => {
+      const { getByText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/forgot-password" element={<div>Forgot Password Page</div>} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.click(getByText('Forgot Password'));
+
+      await waitFor(() => {
+        // Ensure that the "Forgot Password Page" is rendered
+        expect(getByText('Forgot Password Page')).toBeInTheDocument();
+      });
+    });
+
+    // Test for empty form submission
+    it('should show an error for empty form submission', async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: '' } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: '' } });
+      fireEvent.click(getByText('LOGIN'));
+      
+      const emailInput = getByPlaceholderText('Enter Your Email');
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          expect(emailInput).toHaveAttribute('required'); 
+      });
+    });
+   
 });
