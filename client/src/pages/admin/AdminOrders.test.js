@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import AxiosMockAdapter from "axios-mock-adapter";
@@ -44,7 +44,7 @@ beforeEach(() => {
 
   mock
     .onPut("/api/v1/auth/order-status/1")
-    .replyOnce(200, { message: "Status updated" });
+    .reply(200, { message: "Status updated" });
 });
 
 const renderOrderForm = () => {
@@ -65,10 +65,32 @@ describe("AdminOrders Component", () => {
 
   test("fetches and displays orders", async () => {
     renderOrderForm();
-
     expect(await screen.findByText("John Doe")).toBeTruthy();
     expect(await screen.findByText("Processing")).toBeTruthy();
     expect(await screen.findByText("Product 1")).toBeTruthy();
   });
 
+  test("handles API error for fetching orders", async () => {
+    mock.onGet("/api/v1/auth/all-orders").reply(500);
+    renderOrderForm();
+    expect(await screen.findByText(/All Orders/i)).toBeTruthy();
+  });
+
+  test("displays correct date format", async () => {
+    renderOrderForm();
+    expect(await screen.findByText(/ago/i)).toBeTruthy();
+  });
+
+  test("displays correct payment status", async () => {
+    renderOrderForm();
+    expect(await screen.findByText("Success")).toBeTruthy();
+  });
+
+  test("handles missing auth token", async () => {
+    jest.mock("../../context/auth", () => ({
+      useAuth: jest.fn(() => [null, jest.fn()]),
+    }));
+    renderOrderForm();
+    expect(await screen.findByText(/All Orders/i)).toBeTruthy();
+  });
 });
