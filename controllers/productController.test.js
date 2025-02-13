@@ -2,7 +2,6 @@ import { jest } from "@jest/globals";
 import { getProductController, getSingleProductController } from './productController';
 import productModel from "../models/productModel";
 
-jest.mock("../models/productModel.js");
 
 describe("Get Product Controller Test", () => {
     let req, res, mockProducts;
@@ -26,7 +25,7 @@ describe("Get Product Controller Test", () => {
 
     test("Should return a list of products successfully", async () => {
 
-        productModel.find.mockReturnValue({
+        productModel.find = jest.fn().mockReturnValue({
             populate: jest.fn().mockReturnThis(),
             select: jest.fn().mockReturnThis(),
             limit: jest.fn().mockReturnThis(),
@@ -46,7 +45,7 @@ describe("Get Product Controller Test", () => {
 
 
     test("Should handle errors during get list of products successfully", async () => {
-        productModel.find.mockImplementation(() => {
+        productModel.find = jest.fn().mockImplementation(() => {
             throw new Error("Database error");
         });
 
@@ -60,7 +59,6 @@ describe("Get Product Controller Test", () => {
         });
     });
 });
-
 
 describe("Get Single Product Controller Test", () => {
     let req, res, mockProducts;
@@ -87,7 +85,7 @@ describe("Get Single Product Controller Test", () => {
     test("Should find the specific product successfully", async () => {
         const mockTargetProduct = mockProducts[1];
 
-        productModel.findOne.mockImplementation(({ slug }) => ({
+        productModel.findOne = jest.fn().mockImplementation(({ slug }) => ({
             select: jest.fn().mockReturnThis(),
             populate: jest.fn().mockResolvedValue(
                 mockProducts.find(p => p.slug === slug) || null
@@ -108,7 +106,7 @@ describe("Get Single Product Controller Test", () => {
 
         req.params.slug =  "null slug";
 
-        productModel.findOne.mockImplementation(({ slug }) => ({
+        productModel.findOne = jest.fn().mockImplementation(({ slug }) => ({
             select: jest.fn().mockReturnThis(),
             populate: jest.fn().mockResolvedValue(
                 mockProducts.find(p => p.slug === slug) || null
@@ -127,7 +125,7 @@ describe("Get Single Product Controller Test", () => {
 
     test("Should handle errors during get single product successfully", async () => {
         const dbError = new Error("Database error");
-        productModel.findOne.mockImplementation(() => {
+        productModel.findOne = jest.fn().mockImplementation(() => {
             throw dbError;
         });
 

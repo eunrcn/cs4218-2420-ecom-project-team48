@@ -2,8 +2,6 @@ import { jest } from "@jest/globals";
 import { registerController } from "./authController";
 import userModel from "../models/userModel";
 
-jest.mock("../models/userModel.js");
-
 describe("Register Controller Test", () => {
   let req, res;
 
