@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react';
+import { render, fireEvent, waitFor, screen } from '@testing-library/react';
 import axios from 'axios';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import '@testing-library/jest-dom/extend-expect';
@@ -220,5 +220,108 @@ describe('Login Component', () => {
           expect(emailInput).toHaveAttribute('required'); 
       });
     });
-   
+
+    // Test for invalid email
+    it("should show an error for email with no '@' symbol", async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      const invalidEmail = "userexample.com";
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: invalidEmail } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: 'password123' } });
+      fireEvent.click(getByText('LOGIN'));
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          // finds an element that contains the specified text
+          expect(screen.findByText(`Please include an '@' in the email address. ${invalidEmail}`)).toBeTruthy(); 
+      });
+    });
+
+    it("should show an error for email with no domain", async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'user@.com' } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: 'password123' } });
+      fireEvent.click(getByText('LOGIN'));
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          // finds an element that contains the specified text
+          expect(screen.findByText("'.' is used at a wrong position in '.com'.")).toBeTruthy(); 
+      });
+    });
+
+    it("should show an error for email with multiple '@' symbols", async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'user@@example.com' } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: 'password123' } });
+      fireEvent.click(getByText('LOGIN'));
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          // finds an element that contains the specified text
+          expect(screen.findByText("A part following '@' should not contain the symbol '@'.")).toBeTruthy(); 
+      });
+    });
+
+    it("should show an error for email with invalid domain", async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'user@example..com' } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: 'password123' } });
+      fireEvent.click(getByText('LOGIN'));
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          // finds an element that contains the specified text
+          expect(screen.findByText("'.' is used at a wrong position in 'example..com'.")).toBeTruthy(); 
+      });
+    });
+
+    it("should show an error for email with space", async () => {
+      const { getByText, getByPlaceholderText } = render(
+          <MemoryRouter initialEntries={['/login']}>
+              <Routes>
+                  <Route path="/login" element={<Login />} />
+              </Routes>
+          </MemoryRouter>
+      );
+
+      fireEvent.change(getByPlaceholderText('Enter Your Email'), { target: { value: 'user @example.com' } });
+      fireEvent.change(getByPlaceholderText('Enter Your Password'), { target: { value: 'password123' } });
+      fireEvent.click(getByText('LOGIN'));
+
+      await waitFor(() => {
+          expect(axios.post).not.toHaveBeenCalled(); // Ensuring no request is sent
+          // finds an element that contains the specified text
+          expect(screen.findByText("A part followed by '@' should not contain the symbol ' '.")).toBeTruthy(); 
+      });
+    });
+
 });
