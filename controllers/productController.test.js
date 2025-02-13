@@ -1,5 +1,4 @@
 import { jest } from "@jest/globals";
-import productModel from "../models/productModel";
 import categoryModel from "../models/categoryModel";
 
 const productModel = jest.fn();
@@ -129,59 +128,31 @@ describe("createProductController", () => {
     expect(fs.readFileSync).toHaveBeenCalledWith("test/path/photo.jpg");
   });
 
-  it("should return error when name is missing", async () => {
-    mockReq.fields.name = "";
+  it.each([
+    { field: "name", expectedError: "Name is Required" },
+    { field: "description", expectedError: "Description is Required" },
+    { field: "price", expectedError: "Price is Required" },
+    { field: "category", expectedError: "Category is Required" },
+    { field: "quantity", expectedError: "Quantity is Required" },
+  ])("should return error when $field is missing", async ({ field, expectedError }) => {
+    // Use this req for testing field validation
+    const req = {
+      ...mockReq,
+      fields: {
+        ...mockReq.fields,
+        [field]: "",
+      },
+    };
 
-    await createProductController(mockReq, mockRes);
-
-    expect(mockRes.status).toHaveBeenCalledWith(500);
-    expect(mockRes.send).toHaveBeenCalledWith({
-      error: "Name is Required",
-    });
-  });
-
-  it("should return error when description is missing", async () => {
-    mockReq.fields.description = "";
-
-    await createProductController(mockReq, mockRes);
-
-    expect(mockRes.status).toHaveBeenCalledWith(500);
-    expect(mockRes.send).toHaveBeenCalledWith({
-      error: "Description is Required",
-    });
-  });
-
-  it("should return error when price is missing", async () => {
-    mockReq.fields.price = "";
-
-    await createProductController(mockReq, mockRes);
+    await createProductController(req, mockRes);
 
     expect(mockRes.status).toHaveBeenCalledWith(500);
     expect(mockRes.send).toHaveBeenCalledWith({
-      error: "Price is Required",
+      error: expectedError,
     });
-  });
 
-  it("should return error when category is missing", async () => {
-    mockReq.fields.category = "";
-
-    await createProductController(mockReq, mockRes);
-
-    expect(mockRes.status).toHaveBeenCalledWith(500);
-    expect(mockRes.send).toHaveBeenCalledWith({
-      error: "Category is Required",
-    });
-  });
-
-  it("should return error when quantity is missing", async () => {
-    mockReq.fields.quantity = "";
-
-    await createProductController(mockReq, mockRes);
-
-    expect(mockRes.status).toHaveBeenCalledWith(500);
-    expect(mockRes.send).toHaveBeenCalledWith({
-      error: "Quantity is Required",
-    });
+    mockRes.status.mockClear();
+    mockRes.send.mockClear();
   });
 
   it("should return error when photo size exceeds 1MB", async () => {
@@ -273,6 +244,147 @@ describe("deleteProductController", () => {
     expect(mockRes.send).toHaveBeenCalledWith({
       success: true,
       message: "Product Deleted successfully",
+    });
+  });
+});
+
+// updateProductController
+describe("updateProductController", () => {
+  let mockReq;
+  let mockRes;
+  let mockProduct;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Mock product instance returned when product is found and updated
+    mockProduct = {
+      save: jest.fn().mockResolvedValue({}),
+      photo: {
+        data: Buffer.from([]),
+        contentType: "",
+      },
+    };
+
+    // Setup productModel findByIdAndUpdate mock
+    productModel.findByIdAndUpdate = jest.fn().mockResolvedValue(mockProduct);
+
+    // Mock request
+    mockReq = {
+      params: {
+        pid: "product123",
+      },
+      fields: {
+        name: "New Jeans",
+        description: "New description",
+        price: 25.99,
+        category: "Clothing",
+        quantity: 10,
+        shipping: true,
+      },
+      files: {
+        photo: {
+          path: "test/path/updated-photo.jpg",
+          type: "image/jpeg",
+          size: 500000, // 500KB
+        },
+      },
+    };
+
+    // Mock response
+    mockRes = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    // Mock fs to return a mock buffer
+    fs.readFileSync.mockReturnValue(Buffer.from("mock updated image data"));
+  });
+
+  it("should update product successfully", async () => {
+    await updateProductController(mockReq, mockRes);
+
+    expect(productModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      "product123",
+      {
+        ...mockReq.fields,
+        slug: expect.any(String),
+      },
+      { new: true }
+    );
+    expect(mockProduct.save).toHaveBeenCalled();
+    expect(mockRes.status).toHaveBeenCalledWith(201);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Updated Successfully",
+      products: expect.any(Object),
+    });
+  });
+
+  it.each([
+    { field: "name", expectedError: "Name is Required" },
+    { field: "description", expectedError: "Description is Required" },
+    { field: "price", expectedError: "Price is Required" },
+    { field: "category", expectedError: "Category is Required" },
+    { field: "quantity", expectedError: "Quantity is Required" },
+  ])("should return error when $field is missing", async ({ field, expectedError }) => {
+    // Use this req for testing field validation
+    const req = {
+      ...mockReq,
+      fields: {
+        ...mockReq.fields,
+        [field]: "",
+      },
+    };
+
+    await updateProductController(req, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      error: expectedError,
+    });
+
+    mockRes.status.mockClear();
+    mockRes.send.mockClear();
+  });
+
+  it("should return error when photo size exceeds 1MB", async () => {
+    mockReq.files.photo.size = 1500000; // 1.5MB
+
+    await updateProductController(mockReq, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      error: "photo is Required and should be less then 1mb", // yes this is misspelled
+    });
+  });
+
+  it("should handle database errors", async () => {
+    const mockError = new Error("Database error");
+    productModel.findByIdAndUpdate.mockRejectedValueOnce(mockError);
+
+    await updateProductController(mockReq, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: false,
+      error: mockError,
+      message: "Error in Updte product", // yes this is misspelled
+    });
+  });
+
+  it("should update product without photo if no photo provided", async () => {
+    mockReq.files = {};
+
+    await updateProductController(mockReq, mockRes);
+
+    expect(fs.readFileSync).not.toHaveBeenCalled();
+    expect(mockProduct.save).toHaveBeenCalled();
+    expect(mockRes.status).toHaveBeenCalledWith(201);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Updated Successfully",
+      products: expect.any(Object),
     });
   });
 });
@@ -632,7 +744,7 @@ describe("Product Count Controller Test", () => {
             error: dbError,
             success: false,
         });
-    });
+  });
 });
 
 describe("Product List Controller Test", () => {
