@@ -17,6 +17,8 @@ jest.unstable_mockModule("fs", () => ({
 }));
 
 let createProductController;
+let deleteProductController;
+let updateProductController;
 let getProductController;
 let getSingleProductController;
 let productPhotoController;
@@ -34,6 +36,8 @@ let mockCategories;
 beforeAll(async () => {
     const productControllerModule = await import("./productController.js");
     createProductController = productControllerModule.createProductController;
+    deleteProductController = productControllerModule.deleteProductController;
+    updateProductController = productControllerModule.updateProductController;
     getProductController = productControllerModule.getProductController;
     getSingleProductController = productControllerModule.getSingleProductController;
     productPhotoController = productControllerModule.productPhotoController;
@@ -202,6 +206,73 @@ describe("createProductController", () => {
       success: false,
       error: mockError,
       message: "Error in crearing product", // yes this is misspelled
+    });
+  });
+});
+
+// deleteProductController
+describe("deleteProductController", () => {
+  let mockReq;
+  let mockRes;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    // Mock request and response
+    mockReq = {
+      params: {
+        pid: "product123",
+      },
+    };
+    mockRes = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+    };
+
+    // Setup productModel findByIdAndDelete chain mock
+    productModel.findByIdAndDelete = jest.fn().mockReturnThis();
+    productModel.select = jest.fn().mockResolvedValue({});
+  });
+
+  it("should delete product successfully", async () => {
+    await deleteProductController(mockReq, mockRes);
+
+    // Verify mongoose methods called correctly
+    expect(productModel.findByIdAndDelete).toHaveBeenCalledWith("product123");
+    expect(productModel.select).toHaveBeenCalledWith("-photo");
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Deleted successfully",
+    });
+  });
+
+  it("should handle errors when deleting product fails", async () => {
+    // Mock DB error
+    const mockError = new Error("Database error");
+    productModel.select.mockRejectedValueOnce(mockError);
+
+    await deleteProductController(mockReq, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(500);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: false,
+      message: "Error while deleting product",
+      error: mockError,
+    });
+  });
+
+  it("should handle case when product is not found", async () => {
+    // Mock DB query ok but no product found
+    productModel.select.mockResolvedValueOnce(null);
+
+    await deleteProductController(mockReq, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Deleted successfully",
     });
   });
 });
@@ -861,3 +932,4 @@ describe("Product Category Controller Test", () => {
             message: "Error While Getting products",
         });
     });
+});
