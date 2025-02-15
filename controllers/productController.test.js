@@ -1,10 +1,40 @@
 import { jest } from "@jest/globals";
-import { getProductController, getSingleProductController, productPhotoController, productFiltersController, productCountController } from './productController';
 import productModel from "../models/productModel";
 
+let getProductController;
+let getSingleProductController;
+let productPhotoController;
+let productFiltersController;
+let productCountController;
+let productListController;
+let mockProducts
+
+beforeAll(async () => {
+    const productControllerModule = await import("./productController.js");
+    getProductController = productControllerModule.getProductController;
+    getSingleProductController = productControllerModule.getSingleProductController;
+    productPhotoController = productControllerModule.productPhotoController;
+    productFiltersController = productControllerModule.productFiltersController;
+    productCountController = productControllerModule.productCountController;
+    productListController = productControllerModule.productListController;
+
+    mockProducts = [{
+        _id: 1, name: "Product1", slug: "product1", description: "A high-end product", price: 499.99, category: "Cat1", quantity: 10, shipping: false,
+        photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
+    },
+    {
+        _id: 2, name: "Product2", slug: "product2", description: "A high-end product", price: 999.99, category: "Cat2", quantity: 20, shipping: false,
+        photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
+    },
+    {
+        _id: 3, name: "Product3", slug: "product3", description: "A high-end product", price: 899.99, category: "Cat3", quantity: 30, shipping: false,
+        photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
+    }];
+  });
+  
 
 describe("Get Product Controller Test", () => {
-    let req, res, mockProducts;
+    let req, res;
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -13,18 +43,7 @@ describe("Get Product Controller Test", () => {
             status: jest.fn().mockReturnThis(),
             send: jest.fn(),
         };
-        mockProducts = [{
-            _id: 1, name: "Product1", slug: "product1", description: "A high-end product", price: 999.99, category: "Cat1", quantity: 10, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        },
-        {
-            _id: 2, name: "Product2", slug: "product2", description: "A high-end product", price: 999.99, category: "Cat2", quantity: 20, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        },
-        {
-            _id: 3, name: "Product3", slug: "product3", description: "A high-end product", price: 999.99, category: "Cat3", quantity: 30, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        }];
+
     });
 
     test("should return a list of products successfully", async () => {
@@ -76,18 +95,10 @@ describe("Get Product Controller Test", () => {
 });
 
 describe("Get Single Product Controller Test", () => {
-    let req, res, mockProducts;
+    let req, res;
 
     beforeEach(() => {
         jest.clearAllMocks();
-        mockProducts = [{
-            _id: 1, name: "Product1", slug: "product1", description: "Good product", price: 999.99, category: 2, quantity: 50, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        },
-        {
-            _id: 2, name: "Product2", slug: "product2", description: "Better product", price: 999.99, category: 2, quantity: 50, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        }];
 
         req = { params: { slug: mockProducts[1].slug } };
         res = {
@@ -224,7 +235,7 @@ describe("Product Photo Controller Test", () => {
 });
 
 describe("Product Filter Controller Test", () => {
-    let req, res, mockProducts;
+    let req, res;
 
     beforeEach(() => {
         req = {
@@ -234,19 +245,6 @@ describe("Product Filter Controller Test", () => {
             status: jest.fn().mockReturnThis(),
             send: jest.fn(),
         };
-
-        mockProducts = [{
-            _id: 1, name: "Product1", slug: "product1", description: "A high-end product", price: 499.99, category: "Cat1", quantity: 10, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        },
-        {
-            _id: 2, name: "Product2", slug: "product2", description: "A high-end product", price: 999.99, category: "Cat2", quantity: 20, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        },
-        {
-            _id: 3, name: "Product3", slug: "product3", description: "A high-end product", price: 899.99, category: "Cat3", quantity: 30, shipping: false,
-            photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
-        }];
     });
 
     test("should filter product based on category successfully", async () => {
@@ -390,6 +388,65 @@ describe("Product Count Controller Test", () => {
             message: "Error in product count",
             error: dbError,
             success: false,
+        });
+    });
+});
+
+describe("Product List Controller Test", () => {
+    let req, res;
+    const perPage = 6;
+    
+    beforeEach(() => {
+        jest.clearAllMocks();
+        req = { params: { page: 2 } };
+        res = {
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn(),
+        };
+    });
+
+    test("should return the list of products successfully", async () => {
+        const page = req.params.page ? req.params.page : 1;
+        const mockQuery = {
+            select: jest.fn().mockReturnThis(),
+            skip: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            sort: jest.fn().mockResolvedValue(mockProducts),
+        };
+
+        productModel.find = jest.fn().mockReturnValue(mockQuery);
+
+        await productListController(req, res);
+
+        expect(productModel.find).toHaveBeenCalledWith({});
+        expect(mockQuery.select).toHaveBeenCalledWith("-photo");
+        expect(mockQuery.skip).toHaveBeenCalledWith((page - 1) * perPage);
+        expect(mockQuery.limit).toHaveBeenCalledWith(perPage);
+        expect(mockQuery.sort).toHaveBeenCalledWith({ createdAt: -1 });
+
+
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.send).toHaveBeenCalledWith({
+            success: true,
+            products: mockProducts,
+        });
+    });
+
+    test("should handle database errors correctly", async () => {
+        const dbError = new Error("Database error");
+        productModel.find = jest.fn().mockImplementation(() => {
+            throw dbError;
+        });
+
+        await productListController(req, res);
+
+        expect(productModel.find).toHaveBeenCalledWith({});
+        expect(productModel.estimatedDocumentCount).not.toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith({
+            success: false,
+            message: "error in per page ctrl",
+            error: dbError,
         });
     });
 });
