@@ -24,21 +24,21 @@ beforeAll(async () => {
     productCategoryController = productControllerModule.productCategoryController;
 
     mockProducts = [{
-        _id: 1, name: "Product1", slug: "product1", description: "A high-end product", price: 499.99, category: "Cat1", quantity: 10, shipping: false,
+        _id: "1", name: "Product1", slug: "product1", description: "A high-end product", price: 499.99, category: "C1", quantity: 10, shipping: false,
         photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
     },
     {
-        _id: 2, name: "Product2", slug: "product2", description: "A high-end product", price: 999.99, category: "Cat2", quantity: 20, shipping: false,
+        _id: "2", name: "Product2", slug: "product2", description: "A high-end product", price: 999.99, category: "C2", quantity: 20, shipping: false,
         photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
     },
     {
-        _id: 3, name: "Product3", slug: "product3", description: "A high-end product", price: 899.99, category: "Cat3", quantity: 30, shipping: false,
+        _id: "3", name: "Product3", slug: "product3", description: "A high-end product", price: 899.99, category: "C3", quantity: 30, shipping: false,
         photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
     }];
 
     mockCategories = [
-        { _id: 1, name: "Cat1", slug: "cat1" }, { _id: 2, name: "Cat2", slug: "cat2" },
-        { _id: 3, name: "Cat3", slug: "cat3" }, { _id: 4, name: "Cat4", slug: "cat4" }];
+        { _id: "C1", name: "Cat1", slug: "cat1" }, { _id: "C2", name: "Cat2", slug: "cat2" },
+        { _id: "C3", name: "Cat3", slug: "cat3" }, { _id: "C4", name: "Cat4", slug: "cat4" }];
 });
 
 
@@ -186,7 +186,7 @@ describe("Product Photo Controller Test", () => {
     let req, res;
 
     beforeEach(() => {
-        req = { params: { pid: "123" } };
+        req = { params: { pid: "1" } };
         res = {
             set: jest.fn(),
             status: jest.fn().mockReturnThis(),
@@ -529,7 +529,7 @@ describe("Related Product Controller Test", () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
-        req = { params: { pid: "1", cid: "Cat1" } };
+        req = { params: { pid: "2", cid: "C1" } };
         res = {
             status: jest.fn().mockReturnThis(),
             send: jest.fn(),
