@@ -18,6 +18,7 @@ beforeAll(async () => {
     productCountController = productControllerModule.productCountController;
     productListController = productControllerModule.productListController;
     searchProductController = productControllerModule.searchProductController;
+    realtedProductController = productControllerModule.realtedProductController;
 
     mockProducts = [{
         _id: 1, name: "Product1", slug: "product1", description: "A high-end product", price: 499.99, category: "Cat1", quantity: 10, shipping: false,
@@ -482,7 +483,7 @@ describe("Search Product Controller Test", () => {
         expect(res.json).toHaveBeenCalledWith([mockProducts[0]]);
     });
 
-    test("should return if no matching product found correctly", async () => {
+    test("should return empty array if no matching product found", async () => {
         req.params.keyword = "null";
         productModel.find = jest.fn().mockReturnThis();
         productModel.select = jest.fn().mockResolvedValue([]);
@@ -512,6 +513,90 @@ describe("Search Product Controller Test", () => {
         expect(res.send).toHaveBeenCalledWith({
             success: false,
             message: "Error In Search Product API",
+            error: dbError,
+        });
+    });
+});
+
+describe("Related Product Controller Test", () => {
+    let req, res;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        req = { params: { pid: "1", cid: "Cat1" } };
+        res = {
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn(),
+        };
+    });
+
+    test("should return related products successfully", async () => {
+
+        const mockQuery = {
+            select: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            populate: jest.fn().mockResolvedValue([mockProducts[0]])
+        };
+
+        productModel.find = jest.fn().mockReturnValue(mockQuery);
+
+        await realtedProductController(req, res);
+
+        expect(productModel.find).toHaveBeenCalledWith({
+            category: req.params.cid,
+            _id: { $ne: req.params.pid }
+        });
+
+        expect(mockQuery.select).toHaveBeenCalledWith("-photo");
+        expect(mockQuery.limit).toHaveBeenCalledWith(3);
+        expect(mockQuery.populate).toHaveBeenCalledWith("category");
+
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.send).toHaveBeenCalledWith({
+            success: true,
+            products: [mockProducts[0]],
+        });
+    });
+
+    test("should return empty array if no related product found", async () => {
+        const mockQuery = {
+            select: jest.fn().mockReturnThis(),
+            limit: jest.fn().mockReturnThis(),
+            populate: jest.fn().mockResolvedValue([])
+        };
+
+        productModel.find = jest.fn().mockReturnValue(mockQuery);
+
+        await realtedProductController(req, res);
+
+        expect(productModel.find).toHaveBeenCalledWith({
+            category: req.params.cid,
+            _id: { $ne: req.params.pid }
+        });
+
+        expect(mockQuery.select).toHaveBeenCalledWith("-photo");
+        expect(mockQuery.limit).toHaveBeenCalledWith(3);
+        expect(mockQuery.populate).toHaveBeenCalledWith("category");
+        expect(res.status).toHaveBeenCalledWith(200);
+        expect(res.send).toHaveBeenCalledWith({
+            success: true,
+            products: [],
+        });
+    });
+
+    test("should handle database errors correctly", async () => {
+        const dbError = new Error("Database error");
+        productModel.find = jest.fn().mockImplementation(() => {
+            throw dbError;
+        });
+
+        await realtedProductController(req, res);
+
+        expect(productModel.find).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith({
+            success: false,
+            message: "error while geting related product",
             error: dbError,
         });
     });
