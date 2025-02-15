@@ -17,6 +17,7 @@ beforeAll(async () => {
     productFiltersController = productControllerModule.productFiltersController;
     productCountController = productControllerModule.productCountController;
     productListController = productControllerModule.productListController;
+    searchProductController = productControllerModule.searchProductController;
 
     mockProducts = [{
         _id: 1, name: "Product1", slug: "product1", description: "A high-end product", price: 499.99, category: "Cat1", quantity: 10, shipping: false,
@@ -30,8 +31,8 @@ beforeAll(async () => {
         _id: 3, name: "Product3", slug: "product3", description: "A high-end product", price: 899.99, category: "Cat3", quantity: 30, shipping: false,
         photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
     }];
-  });
-  
+});
+
 
 describe("Get Product Controller Test", () => {
     let req, res;
@@ -139,7 +140,7 @@ describe("Get Single Product Controller Test", () => {
         };
 
         productModel.findOne = jest.fn().mockReturnValue(mockQuery);
-        
+
         await getSingleProductController(req, res);
 
         expect(productModel.findOne).toHaveBeenCalledWith({ slug: req.params.slug });
@@ -395,7 +396,7 @@ describe("Product Count Controller Test", () => {
 describe("Product List Controller Test", () => {
     let req, res;
     const perPage = 6;
-    
+
     beforeEach(() => {
         jest.clearAllMocks();
         req = { params: { page: 2 } };
@@ -446,6 +447,71 @@ describe("Product List Controller Test", () => {
         expect(res.send).toHaveBeenCalledWith({
             success: false,
             message: "error in per page ctrl",
+            error: dbError,
+        });
+    });
+});
+
+describe("Search Product Controller Test", () => {
+    let req, res;
+
+    beforeEach(() => {
+        jest.clearAllMocks();
+        req = { params: { keyword: "1" } };
+        res = {
+            json: jest.fn(),
+            status: jest.fn().mockReturnThis(),
+            send: jest.fn(),
+        };
+    });
+
+    test("should return matching products successfully", async () => {
+
+        productModel.find = jest.fn().mockReturnThis();
+        productModel.select = jest.fn().mockResolvedValue([mockProducts[0]]);
+
+        await searchProductController(req, res);
+
+        expect(productModel.find).toHaveBeenCalledWith({
+            $or: [
+                { name: { $regex: req.params.keyword, $options: "i" } },
+                { description: { $regex: req.params.keyword, $options: "i" } },
+            ]
+        });
+        expect(productModel.select).toHaveBeenCalledWith("-photo");
+        expect(res.json).toHaveBeenCalledWith([mockProducts[0]]);
+    });
+
+    test("should return if no matching product found correctly", async () => {
+        req.params.keyword = "null";
+        productModel.find = jest.fn().mockReturnThis();
+        productModel.select = jest.fn().mockResolvedValue([]);
+
+        await searchProductController(req, res);
+
+        expect(productModel.find).toHaveBeenCalledWith({
+            $or: [
+                { name: { $regex: req.params.keyword, $options: "i" } },
+                { description: { $regex: req.params.keyword, $options: "i" } },
+            ]
+        });
+        expect(productModel.select).toHaveBeenCalledWith("-photo");
+        expect(res.json).toHaveBeenCalledWith([]);
+    });
+
+    test("should handle database errors correctly", async () => {
+        const dbError = new Error("Database error");
+        productModel.find = jest.fn().mockImplementation(() => {
+            throw dbError;
+        });
+
+        await searchProductController(req, res);
+
+        expect(productModel.find).toHaveBeenCalled();
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.send).toHaveBeenCalledWith({
+            success: false,
+            message: "Error In Search Product API",
             error: dbError,
         });
     });
