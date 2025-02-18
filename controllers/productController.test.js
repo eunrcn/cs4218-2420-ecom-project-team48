@@ -8,8 +8,13 @@ let productPhotoController;
 let productFiltersController;
 let productCountController;
 let productListController;
+let searchProductController;
+let realtedProductController;
+let productCategoryController;
+
 let mockProducts;
 let mockCategories;
+
 
 beforeAll(async () => {
     const productControllerModule = await import("./productController.js");
@@ -24,15 +29,15 @@ beforeAll(async () => {
     productCategoryController = productControllerModule.productCategoryController;
 
     mockProducts = [{
-        _id: "1", name: "Product1", slug: "product1", description: "A high-end product", price: 499.99, category: "C1", quantity: 10, shipping: false,
+        _id: "1", name: "Product1", slug: "product1", description: "Test product", price: 499.99, category: "C1", quantity: 10, shipping: false,
         photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
     },
     {
-        _id: "2", name: "Product2", slug: "product2", description: "A high-end product", price: 999.99, category: "C2", quantity: 20, shipping: false,
+        _id: "2", name: "Product2", slug: "product2", description: "Test product", price: 999.99, category: "C2", quantity: 20, shipping: false,
         photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
     },
     {
-        _id: "3", name: "Product3", slug: "product3", description: "A high-end product", price: 899.99, category: "C3", quantity: 30, shipping: false,
+        _id: "3", name: "Product3", slug: "product3", description: "Test product", price: 899.99, category: "C3", quantity: 30, shipping: false,
         photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
     }];
 
@@ -624,7 +629,7 @@ describe("Product Category Controller Test", () => {
 
         categoryModel.findOne = jest.fn().mockResolvedValue(mockCategories[2]);
         productModel.find = jest.fn().mockReturnThis();
-        productModel.populate = jest.fn().mockResolvedValue([mockProducts[2]]),
+        productModel.populate = jest.fn().mockResolvedValue([mockProducts[2]]);
 
         await productCategoryController(req, res);
 
@@ -651,7 +656,7 @@ describe("Product Category Controller Test", () => {
         expect(categoryModel.findOne).toHaveBeenCalledWith({ slug: req.params.slug });
         expect(productModel.find).toHaveBeenCalledWith({ category: mockCategories[2] });
         expect(productModel.populate).toHaveBeenCalledWith("category");
-        
+
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.send).toHaveBeenCalledWith({
             success: true,
