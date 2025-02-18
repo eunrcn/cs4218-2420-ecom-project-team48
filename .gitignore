@@ -4,3 +4,4 @@ node_modules
 /blob-report/
 /playwright/.cache/
 sonar-project.properties
+package-lock.json
