@@ -8,27 +8,26 @@ on:
   push:
     branches:
       - main
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
 
-jobs: 
-  test:
-    runs-on: ubuntu-lastest
-
-    steps: 
+    steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '23'
+          node-version: 23
 
       - name: Install dependencies
         run: npm install
 
       - name: Install client dependencies
-        run:
+        run: |
           cd client
           npm install
-      
-      - name: Run Jest tests
+
+      - name: Run tests with Jest
         run: npm test
