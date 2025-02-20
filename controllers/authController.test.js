@@ -2,6 +2,8 @@ import { jest } from "@jest/globals";
 import { registerController } from "./authController";
 import userModel from "../models/userModel";
 
+jest.mock("../models/userModel.js");
+
 describe("Register Controller Test", () => {
   let req, res;
 
@@ -30,6 +32,7 @@ describe("Register Controller Test", () => {
     userModel.prototype.save = jest.fn();
 
     await registerController(req, res);
+
     // expect(userModel.prototype.save).not.toHaveBeenCalled();
     expect(userModel.prototype.save).toHaveBeenCalled();
     
