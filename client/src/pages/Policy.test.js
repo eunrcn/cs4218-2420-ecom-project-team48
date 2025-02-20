@@ -1,12 +1,8 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-import AxiosMockAdapter from "axios-mock-adapter";
 import "@testing-library/jest-dom/extend-expect";
 import Policy from "./Policy";
-
-jest.mock("axios");
 
 jest.mock("../context/auth", () => ({
   useAuth: jest.fn(() => [{ token: "dummy-token" }, jest.fn()]),
@@ -21,18 +17,6 @@ jest.mock("../context/search", () => ({
 }));
 
 jest.mock("../hooks/useCategory", () => jest.fn(() => []));
-
-const mock = new AxiosMockAdapter(axios);
-
-beforeEach(() => {
-  mock.reset();
-  // Mock data (you can change as required)
-  mock.onGet("/api/contact-info").reply(200, {
-    email: "contact@ecommerce.com",
-    phone: "012-3456789",
-    support: "1800-0000-0000",
-  });
-});
 
 const renderPolicyPage = () => {
   render(
