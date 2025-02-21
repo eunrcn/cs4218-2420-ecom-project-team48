@@ -11,7 +11,6 @@ import axios from "axios";
 import AxiosMockAdapter from "axios-mock-adapter";
 import "@testing-library/jest-dom/extend-expect";
 import HomePage from "./HomePage";
-import toast from "react-hot-toast";
 
 jest.mock("axios");
 
