@@ -27,6 +27,14 @@ jest.mock("react-hot-toast", () => ({
 
 jest.mock("../hooks/useCategory", () => jest.fn(() => []));
 
+const renderHeaderComponent = () => {
+  render(
+    <MemoryRouter>
+      <Header />
+    </MemoryRouter>
+  );
+};
+
 describe("Header Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -61,16 +69,11 @@ describe("Header Component", () => {
     });
   });
 
-  test("renders header with categories", async () => {
+  test("renders header correctly", async () => {
     // mock the useAuth hook to return a logged-out state
     useAuth.mockReturnValue([null, jest.fn()]);
     useCart.mockReturnValue([[], jest.fn()]);
-
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
 
     // check if the main elements are rendered
     expect(screen.getByText("🛒 Virtual Vault")).toBeInTheDocument();
@@ -81,21 +84,13 @@ describe("Header Component", () => {
   });
 
   test("verifies that the '🛒 Virtual Vault' logo links to the homepage", () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
     const logo = screen.getByText(/🛒 Virtual Vault/i);
     expect(logo.closest("a")).toHaveAttribute("href", "/");
   });
 
   test("verifies that the 'Home' link navigates to the homepage", () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
     const homeLink = screen.getByText(/Home/i);
     fireEvent.click(homeLink);
     expect(window.location.pathname).toBe("/");
@@ -103,11 +98,7 @@ describe("Header Component", () => {
 
   test("verifies that 'Register' and 'Login' links are shown when user is not logged in", () => {
     useAuth.mockReturnValue([null, jest.fn()]);
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
     expect(screen.getByText(/Register/i)).toBeInTheDocument();
     expect(screen.getByText(/Login/i)).toBeInTheDocument();
 
@@ -121,11 +112,7 @@ describe("Header Component", () => {
 
   test("verifies that 'Dashboard' and 'Logout' options are shown when user is logged in", () => {
     useAuth.mockReturnValue([{ user: { name: "John Doe" }, token: "dummy-token" }, jest.fn()]);
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
     expect(screen.getByText(/Dashboard/i)).toBeInTheDocument();
     expect(screen.getByText("John Doe")).toBeInTheDocument();
     expect(screen.getByText(/Logout/i)).toBeInTheDocument();
@@ -134,11 +121,7 @@ describe("Header Component", () => {
   test("checks that clicking on 'Logout' clears authentication data", () => {
     const mockSetAuth = jest.fn();
     useAuth.mockReturnValue([{ user: { name: "John Doe" }, token: "dummy-token" }, mockSetAuth]);
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
     const logoutButton = screen.getByText(/Logout/i);
     fireEvent.click(logoutButton);
     expect(mockSetAuth).toHaveBeenCalledWith({ user: null, token: "" });
@@ -146,12 +129,8 @@ describe("Header Component", () => {
     expect(toast.success).toHaveBeenCalledWith("Logout Successfully");
   });
 
-  test("ensures SearchInput is present in the navigation", () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+  test("ensures SearchInput is shown", () => {
+    renderHeaderComponent();
     expect(screen.getByPlaceholderText(/Search/i)).toBeInTheDocument();
   });
 
@@ -176,11 +155,7 @@ describe("Header Component", () => {
     useAuth.mockReturnValue([{ user: userAdmin }, jest.fn()]);
     useCart.mockReturnValue([[], jest.fn()]);
 
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
 
     expect(screen.getByText("Admin User")).toBeInTheDocument();
 
@@ -188,11 +163,7 @@ describe("Header Component", () => {
     useAuth.mockReturnValue([{ user: userRegular }, jest.fn()]);
     useCart.mockReturnValue([[], jest.fn()]);
 
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
 
     expect(screen.getByText("Regular User")).toBeInTheDocument();
   });
@@ -202,11 +173,7 @@ describe("Header Component", () => {
 
     // test for empty cart
     useCart.mockReturnValue([[], jest.fn()]);
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
     const cartLink = screen.getByText(/Cart/i);
     const badge = screen.getByText(/0/i);
     expect(badge).toBeInTheDocument();
@@ -214,11 +181,7 @@ describe("Header Component", () => {
 
     // test for cart with products
     useCart.mockReturnValue([[{ id: 1 }, { id: 2 }], jest.fn()]);
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>
-    );
+    renderHeaderComponent();
     const badge2 = screen.getByText(/2/i);
     expect(badge2).toBeInTheDocument();
   });
