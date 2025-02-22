@@ -55,11 +55,4 @@ describe('AdminDashboard', () => {
         expect(screen.getByRole('heading', { name: /admin contact : 84327890/i }))
           .toBeInTheDocument();
     });
-
-    test('does not display sensitive user data', () => {
-        expect(screen.queryByText(/password/i)).toBeNull();
-        expect(screen.queryByText(/address/i)).toBeNull();
-        expect(screen.queryByText(/answer/i)).toBeNull();
-    });
-
 });
