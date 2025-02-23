@@ -86,6 +86,19 @@ describe("CreateProduct Component", () => {
     });
   });
 
+  test("successfully fetches and displays categories", async () => {
+    renderComponent();
+  
+    await waitFor(() => {
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
+      
+      expect(screen.getByText("Electronics")).toBeInTheDocument();
+      expect(screen.getByText("Books")).toBeInTheDocument();
+
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+  });
+
   test("displays error toast when fetching categories fails", async () => {
     axios.get.mockRejectedValue(new Error("API Error"));
     renderComponent();
@@ -117,7 +130,7 @@ describe("CreateProduct Component", () => {
         screen.getByPlaceholderText(/write a description/i)
       ).toBeInTheDocument();
 
-      expect(screen.getByPlaceholderText(/write a Price/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/write a price/i)).toBeInTheDocument();
 
       expect(
         screen.getByPlaceholderText(/write a quantity/i)
@@ -146,7 +159,7 @@ describe("CreateProduct Component", () => {
       },
     });
 
-    fireEvent.change(screen.getByPlaceholderText("write a Price"), {
+    fireEvent.change(screen.getByPlaceholderText("write a price"), {
       target: { value: "100" },
     });
 
@@ -207,7 +220,7 @@ describe("CreateProduct Component", () => {
       },
     });
 
-    fireEvent.change(screen.getByPlaceholderText("write a Price"), {
+    fireEvent.change(screen.getByPlaceholderText("write a price"), {
       target: { value: "100" },
     });
 
@@ -236,44 +249,32 @@ describe("CreateProduct Component", () => {
     });
   });
 
-  test("shows validation errors for missing fields", async () => {
+  test("handles no photo selected", async () => {
     renderComponent();
-
+  
     fireEvent.change(screen.getByPlaceholderText("write a name"), {
       target: { value: "Wireless Headphones" },
     });
-
-    fireEvent.click(screen.getByText("CREATE PRODUCT"));
-
-    await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        "Product description is required."
-      );
-      expect(mockNavigate).not.toHaveBeenCalled();
-    });
-  });
-
-  test("handles invalid price input", async () => {
-    renderComponent();
-
-    fireEvent.change(screen.getByPlaceholderText("write a name"), {
-      target: { value: "Wireless Headphones" },
-    });
-
+  
     fireEvent.change(screen.getByPlaceholderText("write a description"), {
       target: {
         value: "High-quality wireless headphones with noise cancellation.",
       },
     });
-    fireEvent.change(screen.getByPlaceholderText("write a Price"), {
-      target: { value: "-100" },
+  
+    fireEvent.change(screen.getByPlaceholderText("write a price"), {
+      target: { value: "100" },
     });
-
+  
+    fireEvent.change(screen.getByPlaceholderText("write a quantity"), {
+      target: { value: "10" },
+    });
+    
     fireEvent.click(screen.getByText("CREATE PRODUCT"));
-
+  
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
-        "Price must be a valid number greater than zero."
+        "Please check all fields including photo"
       );
     });
   });

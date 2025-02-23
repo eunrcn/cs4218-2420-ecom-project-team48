@@ -39,25 +39,8 @@ const CreateProduct = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
 
-    // Validation checks
-    if (!name) {
-      toast.error("Product name is required.");
-      return;
-    }
-    if (!description) {
-      toast.error("Product description is required.");
-      return;
-    }
-    if (!price || price <= 0) {
-      toast.error("Price must be a valid number greater than zero.");
-      return;
-    }
-    if (!quantity || quantity <= 0) {
-      toast.error("Quantity must be a valid number greater than zero.");
-      return;
-    }
     if (!photo) {
-      toast.error("Please upload a product photo.");
+      toast.error("Please check all fields including photo");
       return;
     }
 
@@ -161,7 +144,7 @@ const CreateProduct = () => {
                 <input
                   type="number"
                   value={price}
-                  placeholder="write a Price"
+                  placeholder="write a price"
                   className="form-control"
                   onChange={(e) => setPrice(e.target.value)}
                 />
