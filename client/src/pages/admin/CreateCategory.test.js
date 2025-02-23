@@ -11,7 +11,6 @@ import axios from "axios";
 import toast from "react-hot-toast";
 import CreateCategory from "./CreateCategory";
 import "@testing-library/jest-dom";
-import { describe } from "node:test";
 
 jest.mock("axios");
 jest.mock("react-hot-toast");
@@ -93,7 +92,7 @@ describe("CreateCategory Component", () => {
 
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
-        "Something wwent wrong in getting catgeory"
+        "Something went wrong in getting catgeory"
       );
     });
   });
@@ -128,7 +127,7 @@ describe("CreateCategory Component", () => {
     await waitFor(() => {
       expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
       expect(toast.error).toHaveBeenCalledWith(
-        "somthing went wrong in input form"
+        "something went wrong in input form"
       );
     });
   });
@@ -205,7 +204,7 @@ describe("CreateCategory Component", () => {
         "/api/v1/category/update-category/1",
         { name: "Updated Fail" }
       );
-      expect(toast.error).toHaveBeenCalledWith("Somtihing went wrong");
+      expect(toast.error).toHaveBeenCalledWith("Something went wrong");
       expect(screen.getByTestId("modal")).toBeInTheDocument();
     });
   });
@@ -235,7 +234,7 @@ describe("CreateCategory Component", () => {
       expect(axios.delete).toHaveBeenCalledWith(
         "/api/v1/category/delete-category/1"
       );
-      expect(toast.error).toHaveBeenCalledWith("Somtihing went wrong");
+      expect(toast.error).toHaveBeenCalledWith("Something went wrong");
       expect(screen.getByText("Electronics")).toBeInTheDocument(); // electronics not deleted
     });
   });
