@@ -27,7 +27,7 @@ const CreateProduct = () => {
       }
     } catch (error) {
       console.log(error);
-      toast.error("Something wwent wrong in getting catgeory");
+      toast.error("Something went wrong in getting category");
     }
   };
 
@@ -38,6 +38,13 @@ const CreateProduct = () => {
   //create product function
   const handleCreate = async (e) => {
     e.preventDefault();
+
+    if (!photo) {
+      toast.error("Please check all fields including photo");
+      return;
+    }
+
+    // Proceed with product creation if all validations pass
     try {
       const productData = new FormData();
       productData.append("name", name);
@@ -46,19 +53,21 @@ const CreateProduct = () => {
       productData.append("quantity", quantity);
       productData.append("photo", photo);
       productData.append("category", category);
-      const { data } = axios.post(
+      productData.append("shipping", shipping);
+
+      const { data } = await axios.post(
         "/api/v1/product/create-product",
         productData
       );
       if (data?.success) {
-        toast.error(data?.message);
-      } else {
         toast.success("Product Created Successfully");
         navigate("/dashboard/admin/products");
+      } else {
+        toast.error(data?.message);
       }
     } catch (error) {
+      toast.error("Something went wrong");
       console.log(error);
-      toast.error("something went wrong");
     }
   };
 
@@ -73,7 +82,7 @@ const CreateProduct = () => {
             <h1>Create Product</h1>
             <div className="m-1 w-75">
               <Select
-                bordered={false}
+                variant="default"
                 placeholder="Select a category"
                 size="large"
                 showSearch
@@ -135,7 +144,7 @@ const CreateProduct = () => {
                 <input
                   type="number"
                   value={price}
-                  placeholder="write a Price"
+                  placeholder="write a price"
                   className="form-control"
                   onChange={(e) => setPrice(e.target.value)}
                 />
@@ -151,7 +160,7 @@ const CreateProduct = () => {
               </div>
               <div className="mb-3">
                 <Select
-                  bordered={false}
+                  variant="default"
                   placeholder="Select Shipping "
                   size="large"
                   showSearch

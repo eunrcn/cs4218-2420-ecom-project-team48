@@ -125,7 +125,7 @@ describe('Products Component', () => {
     );
 
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith('Someething Went Wrong');
+      expect(toast.error).toHaveBeenCalledWith('Something Went Wrong');
     });
   });
 });
