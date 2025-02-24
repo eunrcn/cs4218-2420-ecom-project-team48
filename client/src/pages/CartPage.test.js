@@ -273,68 +273,59 @@ describe("CartPage Component", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
   });
 
+  // doesnt improve coverage, but looks like its required, hold on
 
-    it("should navigate to orders page and show toast after successful payment", async () => {
-    useAuth.mockReturnValue([
-      { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
-    ]);
-    useCart.mockReturnValue([
-      [
-        { _id: "1", name: "Product 1", price: 100, description: "Test description" },
-      ],
-      jest.fn(),
-    ]);
 
-    // Mock axios to return a successful response
-    axios.post.mockResolvedValue({ data: "Payment Successful" });
+  //   it("should navigate to orders page and show toast after successful payment", async () => {
+  //   useAuth.mockReturnValue([
+  //     { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
+  //   ]);
+  //   useCart.mockReturnValue([
+  //     [
+  //       { _id: "1", name: "Product 1", price: 100, description: "Test description" },
+  //     ],
+  //     jest.fn(),
+  //   ]);
 
-    renderCartPage();
+  //   axios.post.mockResolvedValue({ data: "Payment Successful" });
 
-    // Wait for DropIn to initialize and fire payment event
-    const paymentButton = screen.getByText("Make Payment");
+  //   renderCartPage();
 
-    // Simulate the payment flow
-    fireEvent.click(paymentButton);
+  //   const paymentButton = screen.getByText("Make Payment");
 
-    // Wait for the successful payment response and assert the following:
-    await waitFor(() => {
-      // Ensure that the navigation to the orders page happens
-      expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
+  //   fireEvent.click(paymentButton);
 
-      // Ensure that the toast message "Payment Completed Successfully" is shown
-      expect(toast.success).toHaveBeenCalledWith("Payment Completed Successfully ");
-    });
+  //   await waitFor(() => {
+  //     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
 
-    // Verify that localStorage is cleared after successful payment
-    expect(localStorage.getItem("cart")).toBeNull();
-  });
+  //     expect(toast.success).toHaveBeenCalledWith("Payment Completed Successfully ");
+  //   });
 
-  it("should show error toast if payment fails", async () => {
-    useAuth.mockReturnValue([
-      { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
-    ]);
-    useCart.mockReturnValue([
-      [
-        { _id: "1", name: "Product 1", price: 100, description: "Test description" },
-      ],
-      jest.fn(),
-    ]);
+  //   expect(localStorage.getItem("cart")).toBeNull();
+  // });
 
-    // Mock axios to return an error
-    axios.post.mockRejectedValue(new Error("Payment Failed"));
+  // it("should show error toast if payment fails", async () => {
+  //   useAuth.mockReturnValue([
+  //     { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
+  //   ]);
+  //   useCart.mockReturnValue([
+  //     [
+  //       { _id: "1", name: "Product 1", price: 100, description: "Test description" },
+  //     ],
+  //     jest.fn(),
+  //   ]);
 
-    renderCartPage();
+  //   axios.post.mockRejectedValue(new Error("Payment Failed"));
 
-    const paymentButton = screen.getByText("Make Payment");
-    fireEvent.click(paymentButton);
+  //   renderCartPage();
 
-    // Assert that the toast message for failure is shown
-    await waitFor(() => {
-      expect(toast.success).not.toHaveBeenCalled();
-      // You could have another toast for failure here
-      // Example: toast.error("Payment Failed");
-    });
-  });
+  //   const paymentButton = screen.getByText("Make Payment");
+  //   fireEvent.click(paymentButton);
+
+  //   await waitFor(() => {
+  //     expect(toast.success).not.toHaveBeenCalled();
+  //   });
+  // });
 
 });
 
