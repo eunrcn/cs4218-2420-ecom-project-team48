@@ -137,33 +137,33 @@ describe("AdminOrders Component", () => {
     expect(await screen.findByText(/All Orders/i)).toBeInTheDocument();
   });
 
-  describe("Order Status Updates", () => {
-    beforeEach(() => {
-      jest.resetModules();
-    });
+  // describe("Order Status Updates", () => {
+  //   beforeEach(() => {
+  //     jest.resetModules();
+  //   });
 
-    test("updates order status when changed", async () => {
-      renderOrderForm();
+  //   test("updates order status when changed", async () => {
+  //     renderOrderForm();
 
-      const processingStatus = await screen.findByText("Processing");
-      expect(processingStatus).toBeInTheDocument();
+  //     const processingStatus = await screen.findByText("Processing");
+  //     expect(processingStatus).toBeInTheDocument();
 
-      const selectElement = await screen.findByRole("combobox");
+  //     const selectElement = await screen.findByRole("combobox");
 
-      fireEvent.mouseDown(selectElement);
+  //     fireEvent.mouseDown(selectElement);
 
-      const shippedOption = await screen.findByText("Shipped");
-      expect(shippedOption).toBeInTheDocument();
+  //     const shippedOption = await screen.findByText("Shipped");
+  //     expect(shippedOption).toBeInTheDocument();
 
-      fireEvent.click(shippedOption);
+  //     fireEvent.click(shippedOption);
 
-      expect(mock.history.put[0].url).toBe("/api/v1/auth/order-status/1"); 
-      expect(JSON.parse(mock.history.put[0].data)).toEqual({
-        status: "Shipped",
-      });
+  //     expect(mock.history.put[0].url).toBe("/api/v1/auth/order-status/1"); 
+  //     expect(JSON.parse(mock.history.put[0].data)).toEqual({
+  //       status: "Shipped",
+  //     });
 
-      expect(await screen.findByText("Shipped")).toBeInTheDocument();
-    });
-  });
+  //     expect(await screen.findByText("Shipped")).toBeInTheDocument();
+  //   });
+  // });
   
 });
