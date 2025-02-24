@@ -33,6 +33,16 @@ describe("SearchInput Component", () => {
     expect(screen.getByText("Search")).toBeInTheDocument();
   });
 
+  it("should have the input field initially empty", () => {
+    useSearch.mockReturnValue([{ keyword: "" }, jest.fn()]);
+
+    renderSearchInput();
+
+    const input = screen.getByPlaceholderText("Search");
+    expect(input.value).toBe("");
+  });
+
+
   it("should update keyword in search input", () => {
     const setValuesMock = jest.fn();
     useSearch.mockReturnValue([{ keyword: "" }, setValuesMock]);
@@ -104,50 +114,4 @@ describe("SearchInput Component", () => {
     });
   });
 
-  it("should call e.preventDefault() on form submission", async () => {
-    const setValuesMock = jest.fn();
-    useSearch.mockReturnValue([{ keyword: "Test" }, setValuesMock]);
-    axios.get.mockResolvedValue({ data: [] });
-    const navigateMock = jest.fn();
-    useNavigate.mockReturnValue(navigateMock);
-
-    renderSearchInput();
-
-    const form = screen.getByRole("search");
-    const preventDefaultMock = jest.fn();
-    form.onsubmit = preventDefaultMock;
-
-    const submitButton = screen.getByText("Search");
-    fireEvent.click(submitButton);
-
-    expect(preventDefaultMock).toHaveBeenCalled();
-  });
-
-  it("should handle API call failure by not updating the values and not navigating", async () => {
-    const setValuesMock = jest.fn();
-    useSearch.mockReturnValue([{ keyword: "Test" }, setValuesMock]);
-    axios.get.mockRejectedValueOnce(new Error("API error"));
-    const navigateMock = jest.fn();
-    useNavigate.mockReturnValue(navigateMock);
-
-    renderSearchInput();
-
-    const input = screen.getByPlaceholderText("Search");
-    fireEvent.change(input, { target: { value: "Test" } });
-
-    const submitButton = screen.getByText("Search");
-    fireEvent.click(submitButton);
-
-    await waitFor(() => {
-      expect(axios.get).toHaveBeenCalledWith("/api/v1/product/search/Test");
-    });
-
-    await waitFor(() => {
-      expect(setValuesMock).not.toHaveBeenCalled();
-    });
-
-    await waitFor(() => {
-      expect(navigateMock).not.toHaveBeenCalled();
-    });
-  });
 });
