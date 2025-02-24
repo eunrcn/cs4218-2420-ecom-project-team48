@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1740378122726" clover="3.2.0">
-  <project timestamp="1740378122726" name="All files">
+<coverage generated="1740378359656" clover="3.2.0">
+  <project timestamp="1740378359656" name="All files">
     <metrics statements="678" coveredstatements="545" conditionals="172" coveredconditionals="119" methods="158" coveredmethods="128" elements="1008" coveredelements="792" complexity="0" loc="678" ncloc="678" packages="13" files="39" classes="39"/>
     <package name="client.src._site.components">
       <metrics statements="15" coveredstatements="11" conditionals="4" coveredconditionals="1" methods="5" coveredmethods="3"/>
@@ -164,16 +164,16 @@
       <file name="SearchInput.js" path="/Users/eunice/testing/client/src/components/Form/SearchInput.js">
         <metrics statements="12" coveredstatements="12" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
         <line num="5" count="12" type="stmt"/>
-        <line num="6" count="240" type="stmt"/>
-        <line num="7" count="240" type="stmt"/>
-        <line num="9" count="240" type="stmt"/>
-        <line num="10" count="2" type="stmt"/>
-        <line num="11" count="2" type="stmt"/>
-        <line num="12" count="2" type="stmt"/>
-        <line num="15" count="1" type="stmt"/>
-        <line num="16" count="1" type="stmt"/>
-        <line num="18" count="1" type="stmt"/>
-        <line num="21" count="240" type="stmt"/>
+        <line num="6" count="242" type="stmt"/>
+        <line num="7" count="242" type="stmt"/>
+        <line num="9" count="242" type="stmt"/>
+        <line num="10" count="4" type="stmt"/>
+        <line num="11" count="4" type="stmt"/>
+        <line num="12" count="4" type="stmt"/>
+        <line num="15" count="2" type="stmt"/>
+        <line num="16" count="2" type="stmt"/>
+        <line num="18" count="2" type="stmt"/>
+        <line num="21" count="242" type="stmt"/>
         <line num="30" count="1" type="stmt"/>
       </file>
     </package>
