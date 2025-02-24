@@ -100,6 +100,28 @@ describe("Profile Component", () => {
     );
   });
 
+  it("should not allow email to be changed because it's disabled", () => {
+    renderProfileForm();
+
+    const emailInput = screen.getByPlaceholderText("Enter Your Email");
+    expect(emailInput).toBeDisabled();
+    expect(emailInput.value).toBe("john@example.com");
+
+    fireEvent.change(emailInput, { target: { value: "newemail@example.com" } });
+    expect(emailInput.value).toBe("john@example.com");
+  });
+
+  it("should update password value when typed in", () => {
+    renderProfileForm();
+
+    const passwordInput = screen.getByPlaceholderText("Enter Your Password");
+
+    expect(passwordInput.value).toBe("");
+
+    fireEvent.change(passwordInput, { target: { value: "newpassword123" } });
+    expect(passwordInput.value).toBe("newpassword123");
+  });
+
   it("should update profile successfully", async () => {
     axios.put.mockResolvedValueOnce({
       data: {
@@ -135,7 +157,8 @@ describe("Profile Component", () => {
     );
   });
 
-  it("should handle profile update error", async () => {
+  it("should handle profile update error with axios rejection", async () => {
+    // lines 48-49 coverage
     axios.put.mockRejectedValueOnce({
       response: { data: { error: "Update failed" } },
     });
@@ -158,4 +181,34 @@ describe("Profile Component", () => {
 
     expect(toast.error).toHaveBeenCalledWith("Something went wrong");
   });
+
+  it("should handle profile update error with axios response containing error", async () => {
+    // line 38 coverage
+    const mockErrorMessage = "Update failed";
+
+    // Mock the axios response to return an error object with the expected structure
+    axios.put.mockResolvedValueOnce({
+      data: { error: mockErrorMessage },
+    });
+
+    renderProfileForm();
+
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Name"), {
+      target: { value: "Jane Doe" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Phone"), {
+      target: { value: "9876543210" },
+    });
+    fireEvent.change(screen.getByPlaceholderText("Enter Your Address"), {
+      target: { value: "456 Elm St" },
+    });
+
+    fireEvent.click(screen.getByText("UPDATE"));
+
+    await waitFor(() => expect(axios.put).toHaveBeenCalled());
+
+    // Expect toast.error to be called with the mock error message
+    expect(toast.error).toHaveBeenCalledWith(mockErrorMessage);
+  });
+
 });

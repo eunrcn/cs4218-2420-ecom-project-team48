@@ -33,6 +33,16 @@ describe("SearchInput Component", () => {
     expect(screen.getByText("Search")).toBeInTheDocument();
   });
 
+  it("should have the input field initially empty", () => {
+    useSearch.mockReturnValue([{ keyword: "" }, jest.fn()]);
+
+    renderSearchInput();
+
+    const input = screen.getByPlaceholderText("Search");
+    expect(input.value).toBe("");
+  });
+
+
   it("should update keyword in search input", () => {
     const setValuesMock = jest.fn();
     useSearch.mockReturnValue([{ keyword: "" }, setValuesMock]);
@@ -103,4 +113,5 @@ describe("SearchInput Component", () => {
       expect(navigateMock).not.toHaveBeenCalled();
     });
   });
+
 });

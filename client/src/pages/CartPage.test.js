@@ -9,11 +9,11 @@ import React from "react";
 
 // Mocks
 jest.mock("../context/auth", () => ({
-  useAuth: jest.fn(),
+  useAuth: jest.fn(() => [null, jest.fn()]),
 }));
 
 jest.mock("../context/cart", () => ({
-  useCart: jest.fn(),
+  useCart: jest.fn(() => [null, jest.fn()]),
 }));
 
 jest.mock("axios");
@@ -62,8 +62,63 @@ const renderCartPage = () => {
 };
 
 describe("CartPage Component", () => {
+  let consoleLogSpy;
+
   beforeEach(() => {
+    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("should log error when removeCartItem throws an error", () => {
+    const mockError = new Error("Failed to remove item");
+
+    const setCart = jest.fn().mockImplementationOnce(() => {
+      throw mockError;
+    });
+
+    useCart.mockReturnValue([
+      [
+        {
+          _id: "1",
+          name: "Product 1",
+          price: 100,
+          description: "Test description",
+        },
+      ],
+      setCart,
+      jest.fn(),
+      jest.fn(),
+    ]);
+
+    renderCartPage();
+
+    const removeButton = screen.getByRole("button", { name: "Remove" });
+
+    fireEvent.click(removeButton);
+
+    expect(setCart).toHaveBeenCalledTimes(1);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(mockError);
+  });
+
+  it("should log error when totalPrice throws an error", () => {
+    const mockError = new Error("Failed to calculate total price");
+
+    const mockToLocaleString = jest.spyOn(Number.prototype, "toLocaleString");
+    mockToLocaleString.mockImplementation(() => {
+      throw mockError;
+    });
+
+    useCart.mockReturnValue([[], jest.fn()]);
+
+    renderCartPage();
+    expect(consoleLogSpy).toHaveBeenCalledWith(mockError);
+
+    mockToLocaleString.mockRestore();
   });
 
   it("should render empty cart message when cart is empty", () => {
@@ -162,4 +217,115 @@ describe("CartPage Component", () => {
     expect(mockNavigate).toHaveBeenCalledTimes(1);
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
   });
+
+    it("should navigate to login page when user is not logged in and clicks 'Please Login to checkout'", () => {
+      useAuth.mockReturnValue([{ user: null, token: null }]);
+      useCart.mockReturnValue([[], jest.fn()]);
+
+      renderCartPage();
+
+      const loginButton = screen.getByText("Plase Login to checkout");
+      fireEvent.click(loginButton);
+
+      expect(mockNavigate).toHaveBeenCalledWith("/login", {
+        state: "/cart",
+      });
+    });
+
+  it("should correctly display the total price of the cart", () => {
+    useAuth.mockReturnValue([
+      { user: { name: "John Doe" }, token: "test-token" },
+    ]);
+    useCart.mockReturnValue([
+      [
+        {
+          _id: "1",
+          name: "Product 1",
+          price: 100,
+          description: "Test description",
+        },
+        {
+          _id: "2",
+          name: "Product 2",
+          price: 200,
+          description: "Test description 2",
+        },
+      ],
+      jest.fn(),
+    ]);
+
+    renderCartPage();
+
+    expect(screen.getByText("Total : $300.00")).toBeInTheDocument(); 
+  });
+
+  it("should prompt user to update address if no address is set", () => {
+    useAuth.mockReturnValue([
+      { user: { name: "John Doe", address: "" }, token: "test-token" },
+    ]);
+    useCart.mockReturnValue([[], jest.fn()]);
+
+    renderCartPage();
+
+    const updateAddressButton = screen.getByText("Update Address");
+    fireEvent.click(updateAddressButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
+  });
+
+  // doesnt improve coverage, but looks like its required, hold on
+
+
+  //   it("should navigate to orders page and show toast after successful payment", async () => {
+  //   useAuth.mockReturnValue([
+  //     { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
+  //   ]);
+  //   useCart.mockReturnValue([
+  //     [
+  //       { _id: "1", name: "Product 1", price: 100, description: "Test description" },
+  //     ],
+  //     jest.fn(),
+  //   ]);
+
+  //   axios.post.mockResolvedValue({ data: "Payment Successful" });
+
+  //   renderCartPage();
+
+  //   const paymentButton = screen.getByText("Make Payment");
+
+  //   fireEvent.click(paymentButton);
+
+  //   await waitFor(() => {
+  //     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
+
+  //     expect(toast.success).toHaveBeenCalledWith("Payment Completed Successfully ");
+  //   });
+
+  //   expect(localStorage.getItem("cart")).toBeNull();
+  // });
+
+  // it("should show error toast if payment fails", async () => {
+  //   useAuth.mockReturnValue([
+  //     { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
+  //   ]);
+  //   useCart.mockReturnValue([
+  //     [
+  //       { _id: "1", name: "Product 1", price: 100, description: "Test description" },
+  //     ],
+  //     jest.fn(),
+  //   ]);
+
+  //   axios.post.mockRejectedValue(new Error("Payment Failed"));
+
+  //   renderCartPage();
+
+  //   const paymentButton = screen.getByText("Make Payment");
+  //   fireEvent.click(paymentButton);
+
+  //   await waitFor(() => {
+  //     expect(toast.success).not.toHaveBeenCalled();
+  //   });
+  // });
+
 });
+

@@ -9,7 +9,7 @@ import {
   forgotPasswordController,
   testController,
   updateProfileController,
-  getOrdersController, 
+  getOrdersController,
   getAllOrdersController,
   orderStatusController,
 } from "../controllers/authController.js";
