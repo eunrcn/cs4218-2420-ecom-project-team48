@@ -157,7 +157,8 @@ describe("Profile Component", () => {
     );
   });
 
-  it("should handle profile update error", async () => {
+  it("should handle profile update error with axios rejection", async () => {
+    // lines 48-49 coverage
     axios.put.mockRejectedValueOnce({
       response: { data: { error: "Update failed" } },
     });
@@ -181,9 +182,13 @@ describe("Profile Component", () => {
     expect(toast.error).toHaveBeenCalledWith("Something went wrong");
   });
 
-  it("should display an error toast when profile update fails", async () => {
-    axios.put.mockRejectedValueOnce({
-      response: { data: { error: "Update failed" } },
+  it("should handle profile update error with axios response containing error", async () => {
+    // line 38 coverage
+    const mockErrorMessage = "Update failed";
+
+    // Mock the axios response to return an error object with the expected structure
+    axios.put.mockResolvedValueOnce({
+      data: { error: mockErrorMessage },
     });
 
     renderProfileForm();
@@ -202,7 +207,8 @@ describe("Profile Component", () => {
 
     await waitFor(() => expect(axios.put).toHaveBeenCalled());
 
-    expect(toast.error).toHaveBeenCalledWith("Something went wrong");
+    // Expect toast.error to be called with the mock error message
+    expect(toast.error).toHaveBeenCalledWith(mockErrorMessage);
   });
 
 });
