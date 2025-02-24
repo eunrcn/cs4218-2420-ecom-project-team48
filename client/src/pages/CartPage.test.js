@@ -162,4 +162,59 @@ describe("CartPage Component", () => {
     expect(mockNavigate).toHaveBeenCalledTimes(1);
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
   });
+
+    it("should navigate to login page when user is not logged in and clicks 'Please Login to checkout'", () => {
+      useAuth.mockReturnValue([{ user: null, token: null }]);
+      useCart.mockReturnValue([[], jest.fn()]);
+
+      renderCartPage();
+
+      const loginButton = screen.getByText("Plase Login to checkout");
+      fireEvent.click(loginButton);
+
+      expect(mockNavigate).toHaveBeenCalledWith("/login", {
+        state: "/cart",
+      });
+    });
+
+  it("should correctly display the total price of the cart", () => {
+    useAuth.mockReturnValue([
+      { user: { name: "John Doe" }, token: "test-token" },
+    ]);
+    useCart.mockReturnValue([
+      [
+        {
+          _id: "1",
+          name: "Product 1",
+          price: 100,
+          description: "Test description",
+        },
+        {
+          _id: "2",
+          name: "Product 2",
+          price: 200,
+          description: "Test description 2",
+        },
+      ],
+      jest.fn(),
+    ]);
+
+    renderCartPage();
+
+    expect(screen.getByText("Total : $300.00")).toBeInTheDocument(); 
+  });
+
+  it("should prompt user to update address if no address is set", () => {
+    useAuth.mockReturnValue([
+      { user: { name: "John Doe", address: "" }, token: "test-token" },
+    ]);
+    useCart.mockReturnValue([[], jest.fn()]);
+
+    renderCartPage();
+
+    const updateAddressButton = screen.getByText("Update Address");
+    fireEvent.click(updateAddressButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
+  });
 });
