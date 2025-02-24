@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import Orders from "./Orders";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
@@ -38,7 +38,7 @@ describe("Orders Component", () => {
     expect(element).toBeTruthy();
   });
 
-  test("displays fetched orders", async () => {
+  test("displays fetched orders when auth token exists", async () => {
     axios.get.mockResolvedValue({
       data: [
         {
@@ -64,6 +64,19 @@ describe("Orders Component", () => {
     expect(await screen.findByText(/Completed/i)).toBeTruthy();
     expect(await screen.findByText(/John Doe/i)).toBeTruthy();
     expect(await screen.findByText(/Success/i)).toBeTruthy();
+  });
+
+  test("fetches orders only when token is present", async () => {
+    const useAuthSpy = jest.spyOn(require("../../context/auth"), "useAuth");
+    useAuthSpy.mockReturnValue([null, jest.fn()]); 
+
+    renderOrderForm();
+
+    await waitFor(() => {
+      expect(axios.get).not.toHaveBeenCalled();
+    });
+
+    useAuthSpy.mockRestore();
   });
 
   test("displays fallback message when fetching orders fails", async () => {

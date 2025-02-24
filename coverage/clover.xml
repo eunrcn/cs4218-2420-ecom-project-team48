@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1740379763451" clover="3.2.0">
-  <project timestamp="1740379763451" name="All files">
-    <metrics statements="678" coveredstatements="547" conditionals="172" coveredconditionals="119" methods="158" coveredmethods="130" elements="1008" coveredelements="796" complexity="0" loc="678" ncloc="678" packages="13" files="39" classes="39"/>
+<coverage generated="1740387373879" clover="3.2.0">
+  <project timestamp="1740387373879" name="All files">
+    <metrics statements="678" coveredstatements="549" conditionals="172" coveredconditionals="121" methods="158" coveredmethods="130" elements="1008" coveredelements="800" complexity="0" loc="678" ncloc="678" packages="13" files="39" classes="39"/>
     <package name="client.src._site.components">
       <metrics statements="15" coveredstatements="11" conditionals="4" coveredconditionals="1" methods="5" coveredmethods="3"/>
       <file name="Footer.js" path="/Users/eunice/testing/client/src/_site/components/Footer.js">
@@ -115,25 +115,25 @@
       <file name="Footer.js" path="/Users/eunice/testing/client/src/components/Footer.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="4" count="11" type="stmt"/>
-        <line num="5" count="226" type="stmt"/>
+        <line num="5" count="225" type="stmt"/>
       </file>
       <file name="Header.js" path="/Users/eunice/testing/client/src/components/Header.js">
         <metrics statements="10" coveredstatements="10" conditionals="4" coveredconditionals="4" methods="3" coveredmethods="3"/>
         <line num="10" count="11" type="stmt"/>
-        <line num="11" count="234" type="stmt"/>
-        <line num="12" count="234" type="stmt"/>
-        <line num="13" count="234" type="stmt"/>
-        <line num="14" count="234" type="stmt"/>
+        <line num="11" count="233" type="stmt"/>
+        <line num="12" count="233" type="stmt"/>
+        <line num="13" count="233" type="stmt"/>
+        <line num="14" count="233" type="stmt"/>
         <line num="15" count="1" type="stmt"/>
         <line num="20" count="1" type="stmt"/>
         <line num="21" count="1" type="stmt"/>
-        <line num="23" count="234" type="stmt"/>
+        <line num="23" count="233" type="stmt"/>
         <line num="64" count="26" type="stmt"/>
       </file>
       <file name="Layout.js" path="/Users/eunice/testing/client/src/components/Layout.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="8" count="11" type="stmt"/>
-        <line num="9" count="225" type="stmt"/>
+        <line num="9" count="224" type="stmt"/>
         <line num="28" count="11" type="stmt"/>
       </file>
       <file name="Prices.js" path="/Users/eunice/testing/client/src/components/Prices.js">
@@ -156,7 +156,7 @@
       <file name="UserMenu.js" path="/Users/eunice/testing/client/src/components/UserMenu.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="3" count="1" type="stmt"/>
-        <line num="4" count="9" type="stmt"/>
+        <line num="4" count="8" type="stmt"/>
       </file>
     </package>
     <package name="client.src.components.Form">
@@ -164,16 +164,16 @@
       <file name="SearchInput.js" path="/Users/eunice/testing/client/src/components/Form/SearchInput.js">
         <metrics statements="12" coveredstatements="12" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="3"/>
         <line num="5" count="12" type="stmt"/>
-        <line num="6" count="241" type="stmt"/>
-        <line num="7" count="241" type="stmt"/>
-        <line num="9" count="241" type="stmt"/>
+        <line num="6" count="240" type="stmt"/>
+        <line num="7" count="240" type="stmt"/>
+        <line num="9" count="240" type="stmt"/>
         <line num="10" count="2" type="stmt"/>
         <line num="11" count="2" type="stmt"/>
         <line num="12" count="2" type="stmt"/>
         <line num="15" count="1" type="stmt"/>
         <line num="16" count="1" type="stmt"/>
         <line num="18" count="1" type="stmt"/>
-        <line num="21" count="241" type="stmt"/>
+        <line num="21" count="240" type="stmt"/>
         <line num="30" count="1" type="stmt"/>
       </file>
     </package>
@@ -214,44 +214,44 @@
       </file>
     </package>
     <package name="client.src.pages">
-      <metrics statements="131" coveredstatements="89" conditionals="43" coveredconditionals="24" methods="41" coveredmethods="30"/>
+      <metrics statements="131" coveredstatements="91" conditionals="43" coveredconditionals="25" methods="41" coveredmethods="30"/>
       <file name="About.js" path="/Users/eunice/testing/client/src/pages/About.js">
         <metrics statements="2" coveredstatements="2" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="4" count="1" type="stmt"/>
         <line num="5" count="3" type="stmt"/>
       </file>
       <file name="CartPage.js" path="/Users/eunice/testing/client/src/pages/CartPage.js">
-        <metrics statements="48" coveredstatements="34" conditionals="22" coveredconditionals="13" methods="14" coveredmethods="12"/>
+        <metrics statements="48" coveredstatements="36" conditionals="22" coveredconditionals="14" methods="14" coveredmethods="12"/>
         <line num="12" count="1" type="stmt"/>
-        <line num="13" count="10" type="stmt"/>
-        <line num="14" count="10" type="stmt"/>
-        <line num="15" count="10" type="stmt"/>
-        <line num="16" count="9" type="stmt"/>
-        <line num="17" count="9" type="stmt"/>
-        <line num="18" count="9" type="stmt"/>
-        <line num="21" count="9" type="stmt"/>
-        <line num="22" count="9" type="stmt"/>
-        <line num="23" count="9" type="stmt"/>
-        <line num="24" count="9" type="stmt"/>
-        <line num="25" count="4" type="stmt"/>
-        <line num="27" count="9" type="stmt"/>
-        <line num="32" count="0" type="stmt"/>
-        <line num="36" count="9" type="stmt"/>
-        <line num="37" count="1" type="stmt"/>
-        <line num="38" count="1" type="stmt"/>
-        <line num="39" count="1" type="stmt"/>
-        <line num="40" count="1" type="stmt"/>
-        <line num="41" count="1" type="stmt"/>
+        <line num="13" count="12" type="stmt"/>
+        <line num="14" count="12" type="stmt"/>
+        <line num="15" count="12" type="stmt"/>
+        <line num="16" count="11" type="stmt"/>
+        <line num="17" count="11" type="stmt"/>
+        <line num="18" count="11" type="stmt"/>
+        <line num="21" count="11" type="stmt"/>
+        <line num="22" count="11" type="stmt"/>
+        <line num="23" count="11" type="stmt"/>
+        <line num="24" count="11" type="stmt"/>
+        <line num="25" count="5" type="stmt"/>
+        <line num="27" count="11" type="stmt"/>
+        <line num="32" count="1" type="stmt"/>
+        <line num="36" count="11" type="stmt"/>
+        <line num="37" count="2" type="stmt"/>
+        <line num="38" count="2" type="stmt"/>
+        <line num="39" count="2" type="stmt"/>
+        <line num="40" count="2" type="stmt"/>
+        <line num="41" count="2" type="stmt"/>
         <line num="42" count="1" type="stmt"/>
-        <line num="44" count="0" type="stmt"/>
-        <line num="49" count="9" type="stmt"/>
-        <line num="50" count="9" type="stmt"/>
-        <line num="51" count="9" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="49" count="11" type="stmt"/>
+        <line num="50" count="11" type="stmt"/>
+        <line num="51" count="11" type="stmt"/>
         <line num="52" count="6" type="stmt"/>
-        <line num="54" count="3" type="stmt"/>
-        <line num="57" count="9" type="stmt"/>
-        <line num="58" count="9" type="stmt"/>
-        <line num="62" count="9" type="stmt"/>
+        <line num="54" count="5" type="stmt"/>
+        <line num="57" count="11" type="stmt"/>
+        <line num="58" count="11" type="stmt"/>
+        <line num="62" count="11" type="stmt"/>
         <line num="63" count="0" type="stmt"/>
         <line num="64" count="0" type="stmt"/>
         <line num="65" count="0" type="stmt"/>
@@ -263,9 +263,9 @@
         <line num="74" count="0" type="stmt"/>
         <line num="76" count="0" type="stmt"/>
         <line num="77" count="0" type="stmt"/>
-        <line num="80" count="9" type="stmt"/>
-        <line num="103" count="4" type="stmt"/>
-        <line num="121" count="1" type="stmt"/>
+        <line num="80" count="11" type="stmt"/>
+        <line num="103" count="5" type="stmt"/>
+        <line num="121" count="2" type="stmt"/>
         <line num="141" count="1" type="stmt"/>
         <line num="152" count="1" type="stmt"/>
         <line num="160" count="1" type="stmt"/>
@@ -477,22 +477,22 @@
       </file>
     </package>
     <package name="client.src.pages.user">
-      <metrics statements="46" coveredstatements="45" conditionals="6" coveredconditionals="3" methods="13" coveredmethods="13"/>
+      <metrics statements="46" coveredstatements="45" conditionals="6" coveredconditionals="4" methods="13" coveredmethods="13"/>
       <file name="Orders.js" path="/Users/eunice/testing/client/src/pages/user/Orders.js">
-        <metrics statements="13" coveredstatements="13" conditionals="4" coveredconditionals="2" methods="5" coveredmethods="5"/>
+        <metrics statements="13" coveredstatements="13" conditionals="4" coveredconditionals="3" methods="5" coveredmethods="5"/>
         <line num="8" count="1" type="stmt"/>
-        <line num="9" count="10" type="stmt"/>
-        <line num="10" count="9" type="stmt"/>
-        <line num="11" count="9" type="stmt"/>
-        <line num="12" count="6" type="stmt"/>
-        <line num="13" count="6" type="stmt"/>
-        <line num="14" count="4" type="stmt"/>
-        <line num="16" count="2" type="stmt"/>
-        <line num="20" count="9" type="stmt"/>
-        <line num="21" count="6" type="cond" truecount="1" falsecount="1"/>
-        <line num="23" count="9" type="stmt"/>
-        <line num="33" count="3" type="stmt"/>
-        <line num="59" count="3" type="stmt"/>
+        <line num="9" count="9" type="stmt"/>
+        <line num="10" count="8" type="stmt"/>
+        <line num="11" count="8" type="stmt"/>
+        <line num="12" count="2" type="stmt"/>
+        <line num="13" count="2" type="stmt"/>
+        <line num="14" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="20" count="8" type="stmt"/>
+        <line num="21" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="23" count="8" type="stmt"/>
+        <line num="33" count="1" type="stmt"/>
+        <line num="59" count="1" type="stmt"/>
       </file>
       <file name="Profile.js" path="/Users/eunice/testing/client/src/pages/user/Profile.js">
         <metrics statements="33" coveredstatements="32" conditionals="2" coveredconditionals="1" methods="8" coveredmethods="8"/>

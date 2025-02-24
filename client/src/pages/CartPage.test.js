@@ -9,11 +9,11 @@ import React from "react";
 
 // Mocks
 jest.mock("../context/auth", () => ({
-  useAuth: jest.fn(),
+  useAuth: jest.fn(() => [null, jest.fn()]),
 }));
 
 jest.mock("../context/cart", () => ({
-  useCart: jest.fn(),
+  useCart: jest.fn(() => [null, jest.fn()]),
 }));
 
 jest.mock("axios");
@@ -62,8 +62,63 @@ const renderCartPage = () => {
 };
 
 describe("CartPage Component", () => {
+  let consoleLogSpy;
+
   beforeEach(() => {
+    consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it("should log error when removeCartItem throws an error", () => {
+    const mockError = new Error("Failed to remove item");
+
+    const setCart = jest.fn().mockImplementationOnce(() => {
+      throw mockError;
+    });
+
+    useCart.mockReturnValue([
+      [
+        {
+          _id: "1",
+          name: "Product 1",
+          price: 100,
+          description: "Test description",
+        },
+      ],
+      setCart,
+      jest.fn(),
+      jest.fn(),
+    ]);
+
+    renderCartPage();
+
+    const removeButton = screen.getByRole("button", { name: "Remove" });
+
+    fireEvent.click(removeButton);
+
+    expect(setCart).toHaveBeenCalledTimes(1);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(mockError);
+  });
+
+  it("should log error when totalPrice throws an error", () => {
+    const mockError = new Error("Failed to calculate total price");
+
+    const mockToLocaleString = jest.spyOn(Number.prototype, "toLocaleString");
+    mockToLocaleString.mockImplementation(() => {
+      throw mockError;
+    });
+
+    useCart.mockReturnValue([[], jest.fn()]);
+
+    renderCartPage();
+    expect(consoleLogSpy).toHaveBeenCalledWith(mockError);
+
+    mockToLocaleString.mockRestore();
   });
 
   it("should render empty cart message when cart is empty", () => {
@@ -217,4 +272,5 @@ describe("CartPage Component", () => {
 
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
   });
+
 });
