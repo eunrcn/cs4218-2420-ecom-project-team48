@@ -91,6 +91,52 @@ describe('Register Component', () => {
     );
   });
 
+  it('should show error message when email is already registered', async () => {
+    // simulating a response where the email is already registered
+    axios.post.mockResolvedValueOnce({
+      data: {
+        success: false,
+        message: "Already registered, please login", // error message from API
+      },
+    });
+
+    const { getByPlaceholderText } = render(
+      <MemoryRouter initialEntries={['/register']}>
+        <Routes>
+          <Route path="/register" element={<Register />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.change(getByPlaceholderText("Enter Your Name"), {
+      target: { value: "John Doe" },
+    });
+    fireEvent.change(getByPlaceholderText("Enter Your Email"), {
+      target: { value: "test@example.com" },
+    });
+    fireEvent.change(getByPlaceholderText("Enter Your Password"), {
+      target: { value: "password123" },
+    });
+    fireEvent.change(getByPlaceholderText("Enter Your Phone"), {
+      target: { value: "1234567890" },
+    });
+    fireEvent.change(getByPlaceholderText("Enter Your Address"), {
+      target: { value: "123 Street" },
+    });
+    fireEvent.change(getByPlaceholderText("Enter Your DOB"), {
+      target: { value: "2000-01-01" },
+    });
+    fireEvent.change(getByPlaceholderText("What is Your Favorite sports"), {
+      target: { value: "Football" },
+    });
+
+    fireEvent.click(screen.getByText('REGISTER'));
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalled());
+    expect(toast.error).toHaveBeenCalledWith("Already registered, please login");
+    expect(toast.error).toHaveBeenCalledTimes(1);
+  });
+
   it("should display error message on failed registration", async () => {
     axios.post.mockRejectedValueOnce({ message: "User already exists" });
 
