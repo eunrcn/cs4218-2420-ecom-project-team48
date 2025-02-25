@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import User from "./userModel";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { afterEach, beforeEach } from "node:test";
 
 describe("User Model Test", () => {
     let mongoServer, mockUserData;
