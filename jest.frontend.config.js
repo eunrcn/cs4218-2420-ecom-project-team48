@@ -16,15 +16,41 @@ export default {
     "\\.(css|scss)$": "identity-obj-proxy",
   },
 
+  // setup files that run before Jest is loaded
+  setupFiles: [
+    "<rootDir>/jest.setup.js"
+  ],
+  
+  // setup files that run after Jest is loaded
+  setupFilesAfterEnv: [
+    "<rootDir>/client/src/setupTests.js"
+  ],
+
   // ignore all node_modules except styleMock (needed for css imports)
   transformIgnorePatterns: ["/node_modules/(?!(styleMock\\.js)$)"],
 
   // only run these tests
-  testMatch: ["<rootDir>/client/src/pages/Auth/*.test.js"],
+  testMatch: ["<rootDir>/client/src/**/*.test.js"],
+
+  // exclude directory
+  testPathIgnorePatterns: [
+    "<rootDir>/tests-examples/",
+    "<rootDir>/client/src/_markbind/",
+    "<rootDir>/client/src/_site/"
+  ],
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["client/src/pages/Auth/**"],
+  collectCoverageFrom: [
+    "client/src/**/*.js", 
+    "client/src/**/*.jsx",
+    "!tests-examples/**",
+    "!client/src/_markbind/**",
+    "!client/src/_site/**",
+    "!client/src/*.js"
+  ],
+  coverageDirectory: "coverage/frontend",
+  coverageReporters: ["lcov", "text", "json"],
   coverageThreshold: {
     global: {
       lines: 100,

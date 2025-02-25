@@ -6,11 +6,32 @@ export default {
   testEnvironment: "node",
 
   // which test to run
-  testMatch: ["<rootDir>/controllers/*.test.js"],
+  testMatch: [
+    "<rootDir>/controllers/*.test.js",
+    "<rootDir>/middlewares/*.test.js",
+    "<rootDir>/models/*.test.js",
+    "<rootDir>/config/*.test.js",
+    "<rootDir>/routes/*.test.js",
+    "<rootDir>/helpers/*.test.js"
+  ],
+
+  // setup files that run before Jest is loaded
+  setupFiles: [
+    "<rootDir>/jest.setup.js"
+  ],
 
   // jest code coverage
   collectCoverage: true,
-  collectCoverageFrom: ["controllers/**"],
+  collectCoverageFrom: [
+    "controllers/**", 
+    "middlewares/**", 
+    "models/**",
+    "config/**",
+    "routes/**",
+    "helpers/**"
+  ],
+  coverageDirectory: "coverage/backend",
+  coverageReporters: ["lcov", "text", "json"],
   coverageThreshold: {
     global: {
       lines: 100,
