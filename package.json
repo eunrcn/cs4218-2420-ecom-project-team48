@@ -56,21 +56,19 @@
     "sonarqube-scanner": "^3.3.0"
   },
   "jest": {
-    "testEnvironment": "jest-environment-jsdom",
-    "setupFilesAfterEnv": [
-      "<rootDir>/jest.setup.js"
+    "projects": [
+      "./jest.backend.config.js",
+      "./jest.frontend.config.js"
     ],
-    "transform": {
-      "^.+\\.jsx?$": "babel-jest"
-    },
-    "moduleNameMapper": {
-      "\\.(css|scss)$": "identity-obj-proxy"
-    },
-    "transformIgnorePatterns": [
-      "/node_modules/(?!(styleMock\\.js)$)"
-    ],
-    "setupFiles": [
-      "./jest.setup.js"
-    ]
+    "verbose": true,
+    "collectCoverage": true,
+    "coverageDirectory": "coverage",
+    "coverageReporters": ["lcov", "text", "json", "html"],
+    "coverageThreshold": {
+      "global": {
+        "lines": 100,
+        "functions": 100
+      }
+    }
   }
 }
