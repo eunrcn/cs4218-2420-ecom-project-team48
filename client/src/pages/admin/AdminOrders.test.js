@@ -1,11 +1,12 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter, Routes, Route } from "react-router-dom";
 import axios from "axios";
 import AxiosMockAdapter from "axios-mock-adapter";
 import AdminOrders from "./AdminOrders";
 import "@testing-library/jest-dom";
 import "jest-canvas-mock";
+import { useAuth } from "../../context/auth";
 
 jest.mock("../../context/auth", () => ({
   useAuth: jest.fn(() => [{ token: "dummy-token" }, jest.fn()]),
@@ -71,15 +72,15 @@ beforeEach(() => {
     {
       _id: "1",
       status: "Processing",
-      buyer: { name: "John Doe" },
+      buyer: { name: "Saber" },
       createAt: "2024-01-01T00:00:00Z",
       payment: { success: true },
       products: [
         {
           _id: "p1",
-          name: "Product 1",
+          name: "Product",
           description: "Product description",
-          price: 100,
+          price: 1,
         },
       ],
     },
@@ -90,8 +91,21 @@ beforeEach(() => {
     .reply(200, { message: "Status updated" });
 });
 
+beforeAll(() => {
+  Object.defineProperty(window, "matchMedia", {
+    writable: true,
+    value: jest.fn().mockImplementation((query) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    })),
+  });
+});
+
 const renderOrderForm = () => {
-  render(
+  return render(
     <MemoryRouter initialEntries={["/orders"]}>
       <Routes>
         <Route path="/orders" element={<AdminOrders />} />
@@ -100,17 +114,38 @@ const renderOrderForm = () => {
   );
 };
 
+
 describe("AdminOrders Component", () => {
   test("renders correctly", async () => {
     renderOrderForm();
     expect(await screen.findByText(/All Orders/i)).toBeInTheDocument();
   });
 
+  test("does not call getOrders when auth token is missing", async () => {
+    useAuth.mockReturnValue([null, jest.fn()]);
+
+    const { rerender } = renderOrderForm();
+
+    await waitFor(() => expect(mock.history.get.length).toBe(0));
+
+    useAuth.mockReturnValue([{ token: "dummy-token" }, jest.fn()]);
+
+    rerender(
+      <MemoryRouter initialEntries={["/orders"]}>
+        <Routes>
+          <Route path="/orders" element={<AdminOrders />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(mock.history.get.length).toBe(1));
+  });
+
   test("fetches and displays orders", async () => {
     renderOrderForm();
-    expect(await screen.findByText("John Doe")).toBeInTheDocument();
+    expect(await screen.findByText("Saber")).toBeInTheDocument();
     expect(await screen.findByText("Processing")).toBeInTheDocument();
-    expect(await screen.findByText("Product 1")).toBeInTheDocument();
+    expect(await screen.findByText("Product")).toBeInTheDocument();
   });
 
   test("handles API error for fetching orders", async () => {
@@ -137,33 +172,49 @@ describe("AdminOrders Component", () => {
     expect(await screen.findByText(/All Orders/i)).toBeInTheDocument();
   });
 
-  // describe("Order Status Updates", () => {
-  //   beforeEach(() => {
-  //     jest.resetModules();
-  //   });
+  test("updates order status successfully", async () => {
+    renderOrderForm();
+    const select = await screen.findByTestId("status-1");
+    fireEvent.change(select, { target: { value: "Shipped" } });
 
-  //   test("updates order status when changed", async () => {
-  //     renderOrderForm();
+    await waitFor(() =>
+      expect(mock.history.put[0].url).toBe("/api/v1/auth/order-status/1")
+    );
+    expect(mock.history.put[0].data).toContain('"status":"Shipped"');
+  });
 
-  //     const processingStatus = await screen.findByText("Processing");
-  //     expect(processingStatus).toBeInTheDocument();
+  test("handles API error when updating order status", async () => {
+    mock.onPut("/api/v1/auth/order-status/1").reply(500);
+    console.log = jest.fn();
+    renderOrderForm();
+    const select = await screen.findByTestId("status-1");
+    fireEvent.change(select, { target: { value: "Shipped" } });
 
-  //     const selectElement = await screen.findByRole("combobox");
+    await waitFor(() => expect(console.log).toHaveBeenCalled());
+  });
 
-  //     fireEvent.mouseDown(selectElement);
+  test("displays failed payment status", async () => {
+    mock.onGet("/api/v1/auth/all-orders").reply(200, [
+      {
+        _id: "2",
+        status: "Not Process",
+        buyer: { name: "Shirou" },
+        createAt: "2024-01-02T00:00:00Z",
+        payment: { success: false },
+        products: [
+          {
+            _id: "p2",
+            name: "Magic Item",
+            description: "Item description",
+            price: 10,
+          },
+        ],
+      },
+    ]);
 
-  //     const shippedOption = await screen.findByText("Shipped");
-  //     expect(shippedOption).toBeInTheDocument();
+    renderOrderForm();
 
-  //     fireEvent.click(shippedOption);
-
-  //     expect(mock.history.put[0].url).toBe("/api/v1/auth/order-status/1"); 
-  //     expect(JSON.parse(mock.history.put[0].data)).toEqual({
-  //       status: "Shipped",
-  //     });
-
-  //     expect(await screen.findByText("Shipped")).toBeInTheDocument();
-  //   });
-  // });
-  
+    expect(await screen.findByText("Failed")).toBeInTheDocument();
+    expect(screen.getByText("Magic Item")).toBeInTheDocument();
+  });
 });
