@@ -35,14 +35,17 @@ jest.mock("../components/Layout", () => ({
 jest.mock("braintree-web-drop-in-react", () => ({
   __esModule: true,
   default: ({ onInstance }) => {
-    onInstance({
+    // Mock instance with the requestPaymentMethod function
+    const mockInstance = {
       requestPaymentMethod: jest
         .fn()
         .mockResolvedValue({ nonce: "test-nonce" }),
-    });
-    return <div data-testid="dropin-component"></div>;
+    };
+    onInstance(mockInstance); // Trigger the onInstance with the mock instance
+    return <div data-testid="dropin-component"></div>; // Ensure the element is rendered with the correct test ID
   },
 }));
+
 
 const mockNavigate = jest.fn();
 jest.mock("react-router-dom", () => {
@@ -273,57 +276,52 @@ describe("CartPage Component", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
   });
 
-  // doesnt improve coverage, but looks like its required, hold on
+  // it("should handle payment successfully", async () => {
+  //   //line 82 coverage
+    
+  //   const setCartMock = jest.fn();
+  //   const setLoadingMock = jest.fn();
+  //   const mockNavigate = jest.fn();
+  //   const mockToast = require("react-hot-toast");
 
-
-  //   it("should navigate to orders page and show toast after successful payment", async () => {
   //   useAuth.mockReturnValue([
-  //     { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
+  //     { user: { name: "John Doe", address: "123 Street" }, token: "test-token" },
   //   ]);
   //   useCart.mockReturnValue([
   //     [
-  //       { _id: "1", name: "Product 1", price: 100, description: "Test description" },
+  //       {
+  //         _id: "1",
+  //         name: "Product 1",
+  //         price: 100,
+  //         description: "Test description",
+  //       },
   //     ],
-  //     jest.fn(),
+  //     setCartMock,
   //   ]);
 
-  //   axios.post.mockResolvedValue({ data: "Payment Successful" });
+  //   axios.post.mockResolvedValue({ data: { success: true } });
+
+  //   mockToast.success.mockClear();
 
   //   renderCartPage();
 
-  //   const paymentButton = screen.getByText("Make Payment");
+  //   const dropInComponent = await screen.findByTestId("dropin-component");
+  //   expect(dropInComponent).toBeInTheDocument();
 
+  //   const paymentButton = screen.getByText("Make Payment");
   //   fireEvent.click(paymentButton);
+
+  //   await waitFor(() => {
+  //     expect(setCartMock).toHaveBeenCalledWith([]);
+  //     expect(localStorage.removeItem).toHaveBeenCalledWith("cart");
+  //   });
 
   //   await waitFor(() => {
   //     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
-
-  //     expect(toast.success).toHaveBeenCalledWith("Payment Completed Successfully ");
   //   });
 
-  //   expect(localStorage.getItem("cart")).toBeNull();
-  // });
-
-  // it("should show error toast if payment fails", async () => {
-  //   useAuth.mockReturnValue([
-  //     { user: { name: "John Doe", address: "123 Main St" }, token: "test-token" },
-  //   ]);
-  //   useCart.mockReturnValue([
-  //     [
-  //       { _id: "1", name: "Product 1", price: 100, description: "Test description" },
-  //     ],
-  //     jest.fn(),
-  //   ]);
-
-  //   axios.post.mockRejectedValue(new Error("Payment Failed"));
-
-  //   renderCartPage();
-
-  //   const paymentButton = screen.getByText("Make Payment");
-  //   fireEvent.click(paymentButton);
-
   //   await waitFor(() => {
-  //     expect(toast.success).not.toHaveBeenCalled();
+  //     expect(setLoadingMock).toHaveBeenCalledTimes(2);
   //   });
   // });
 
