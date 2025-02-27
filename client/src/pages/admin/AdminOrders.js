@@ -69,6 +69,7 @@ const AdminOrders = () => {
                       <td>{i + 1}</td>
                       <td>
                         <Select
+                          data-testid={`status-${o._id}`}
                           variant="borderless"
                           onChange={(value) => handleChange(o._id, value)}
                           defaultValue={o?.status}

@@ -7,7 +7,7 @@ import React from "react";
 import "@testing-library/jest-dom";
 
 jest.mock("../../context/search", () => ({
-  useSearch: jest.fn(),
+  useSearch: jest.fn(() => [{ keyword: "" }, jest.fn()]),
 }));
 
 jest.mock("axios");
