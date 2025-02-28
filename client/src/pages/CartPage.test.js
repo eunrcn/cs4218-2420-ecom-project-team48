@@ -356,5 +356,60 @@ describe("CartPage Component", () => {
       );
     });
   });
+
+  it("should handle payment failure", async () => {
+    const setCartMock = jest.fn();
+    const mockToast = require("react-hot-toast");
+
+    axios.post.mockRejectedValue(new Error("Payment failed"));
+
+    useAuth.mockReturnValue([
+      { user: { name: "Saber", address: "Singapore" }, token: "test-token" },
+    ]);
+    useCart.mockReturnValue([
+      [
+        {
+          _id: "1",
+          name: "Saber",
+          price: 444,
+          description: "Description",
+        },
+      ],
+      setCartMock,
+    ]);
+
+    mockToast.success.mockClear();
+
+    render(<CartPage />);
+
+    const dropIn = await screen.findByTestId("mock-dropin");
+    fireEvent.click(dropIn.querySelector("button"));
+
+    const paymentButton = await screen.findByRole("button", {
+      name: /make payment/i,
+    });
+
+    fireEvent.click(paymentButton);
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/braintree/payment",
+        expect.objectContaining({
+          nonce: "test-nonce",
+          cart: [
+            {
+              _id: "1",
+              name: "Saber",
+              price: 444,
+              description: "Description",
+            },
+          ],
+        })
+      );
+    });
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(new Error("Payment failed"));
+  });
+
 });
 
