@@ -1,3 +1,4 @@
+/* eslint-disable testing-library/no-node-access */
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import CartPage from "./CartPage";
 import { BrowserRouter } from "react-router-dom";
@@ -32,19 +33,32 @@ jest.mock("../components/Layout", () => ({
   default: ({ children }) => <div data-testid="layout">{children}</div>,
 }));
 
-jest.mock("braintree-web-drop-in-react", () => ({
-  __esModule: true,
-  default: ({ onInstance }) => {
-    // Mock instance with the requestPaymentMethod function
-    const mockInstance = {
-      requestPaymentMethod: jest
-        .fn()
-        .mockResolvedValue({ nonce: "test-nonce" }),
-    };
-    onInstance(mockInstance); // Trigger the onInstance with the mock instance
-    return <div data-testid="dropin-component"></div>; // Ensure the element is rendered with the correct test ID
+jest.mock("braintree-web-drop-in-react", () => {
+  return function DropIn(props) {
+    return (
+      <div data-testid="mock-dropin">
+        <button
+          onClick={() =>
+            props.onInstance({
+              requestPaymentMethod: async () => ({ nonce: "test-nonce" }),
+            })
+          }
+        >
+          DropIn mock
+        </button>
+      </div>
+    );
+  };
+});
+
+Object.defineProperty(window, "localStorage", {
+  value: {
+    setItem: jest.fn(),
+    getItem: jest.fn(),
+    removeItem: jest.fn(),
   },
-}));
+  writable: true,
+});
 
 
 const mockNavigate = jest.fn();
@@ -70,11 +84,13 @@ describe("CartPage Component", () => {
   beforeEach(() => {
     consoleLogSpy = jest.spyOn(console, "log").mockImplementation(() => {});
     jest.clearAllMocks();
+    global.localStorage = {
+      removeItem: jest.fn(),
+      setItem: jest.fn(),
+      getItem: jest.fn(),
+    };
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
 
   it("should log error when removeCartItem throws an error", () => {
     const mockError = new Error("Failed to remove item");
@@ -87,9 +103,9 @@ describe("CartPage Component", () => {
       [
         {
           _id: "1",
-          name: "Product 1",
-          price: 100,
-          description: "Test description",
+          name: "Product B",
+          price: 1,
+          description: "Description",
         },
       ],
       setCart,
@@ -135,14 +151,14 @@ describe("CartPage Component", () => {
 
   it("should display cart items when cart is not empty", () => {
     useAuth.mockReturnValue([
-      { user: { name: "John Doe" }, token: "test-token" },
+      { user: { name: "Saber" }, token: "test-token" },
     ]);
     useCart.mockReturnValue([
       [
         {
           _id: "1",
-          name: "Product 1",
-          price: 100,
+          name: "Product A",
+          price: 1,
           description: "Test description",
         },
       ],
@@ -151,22 +167,22 @@ describe("CartPage Component", () => {
 
     renderCartPage();
 
-    expect(screen.getByText("Product 1")).toBeInTheDocument();
-    expect(screen.getByText("Price : 100")).toBeInTheDocument();
+    expect(screen.getByText("Product A")).toBeInTheDocument();
+    expect(screen.getByText("Price : 1")).toBeInTheDocument();
   });
 
   it("should remove item from cart when remove button is clicked", () => {
     const setCartMock = jest.fn();
     useAuth.mockReturnValue([
-      { user: { name: "John Doe" }, token: "test-token" },
+      { user: { name: "Saber" }, token: "test-token" },
     ]);
     useCart.mockReturnValue([
       [
         {
           _id: "1",
-          name: "Product 1",
-          price: 100,
-          description: "Test description",
+          name: "Product Z",
+          price: 10,
+          description: "Description",
         },
       ],
       setCartMock,
@@ -182,7 +198,7 @@ describe("CartPage Component", () => {
 
   it("should fetch Braintree client token on mount", async () => {
     useAuth.mockReturnValue([
-      { user: { name: "John Doe" }, token: "test-token" },
+      { user: { name: "Saber" }, token: "test-token" },
     ]);
     useCart.mockReturnValue([[], jest.fn()]);
     axios.get.mockResolvedValue({ data: { clientToken: "test-client-token" } });
@@ -206,7 +222,7 @@ describe("CartPage Component", () => {
   it("should navigate to profile page when update address button is clicked", () => {
     useAuth.mockReturnValue([
       {
-        user: { name: "John Doe", address: "123 Street" },
+        user: { name: "Saber", address: "Singapore" },
         token: "test-token",
       },
     ]);
@@ -237,21 +253,21 @@ describe("CartPage Component", () => {
 
   it("should correctly display the total price of the cart", () => {
     useAuth.mockReturnValue([
-      { user: { name: "John Doe" }, token: "test-token" },
+      { user: { name: "Saber" }, token: "test-token" },
     ]);
     useCart.mockReturnValue([
       [
         {
           _id: "1",
-          name: "Product 1",
-          price: 100,
-          description: "Test description",
+          name: "Product X",
+          price: 444,
+          description: "Description",
         },
         {
           _id: "2",
-          name: "Product 2",
-          price: 200,
-          description: "Test description 2",
+          name: "Product Y",
+          price: 400,
+          description: "Description",
         },
       ],
       jest.fn(),
@@ -259,12 +275,12 @@ describe("CartPage Component", () => {
 
     renderCartPage();
 
-    expect(screen.getByText("Total : $300.00")).toBeInTheDocument(); 
+    expect(screen.getByText("Total : $844.00")).toBeInTheDocument(); 
   });
 
   it("should prompt user to update address if no address is set", () => {
     useAuth.mockReturnValue([
-      { user: { name: "John Doe", address: "" }, token: "test-token" },
+      { user: { name: "Saber", address: "" }, token: "test-token" },
     ]);
     useCart.mockReturnValue([[], jest.fn()]);
 
@@ -276,54 +292,69 @@ describe("CartPage Component", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/profile");
   });
 
-  // it("should handle payment successfully", async () => {
-  //   //line 82 coverage
+  it("should handle payment successfully", async () => {
     
-  //   const setCartMock = jest.fn();
-  //   const setLoadingMock = jest.fn();
-  //   const mockNavigate = jest.fn();
-  //   const mockToast = require("react-hot-toast");
+    const setCartMock = jest.fn();
+    const mockToast = require("react-hot-toast");
 
-  //   useAuth.mockReturnValue([
-  //     { user: { name: "John Doe", address: "123 Street" }, token: "test-token" },
-  //   ]);
-  //   useCart.mockReturnValue([
-  //     [
-  //       {
-  //         _id: "1",
-  //         name: "Product 1",
-  //         price: 100,
-  //         description: "Test description",
-  //       },
-  //     ],
-  //     setCartMock,
-  //   ]);
 
-  //   axios.post.mockResolvedValue({ data: { success: true } });
+    useAuth.mockReturnValue([
+      { user: { name: "Saber", address: "Singapore" }, token: "test-token" },
+    ]);
+    useCart.mockReturnValue([
+      [
+        {
+          _id: "1",
+          name: "Saber",
+          price: 444,
+          description: "Description",
+        },
+      ],
+      setCartMock,
+    ]);
 
-  //   mockToast.success.mockClear();
+    axios.post.mockResolvedValue({ data: { success: true } });
 
-  //   renderCartPage();
+    mockToast.success.mockClear();
 
-  //   const dropInComponent = await screen.findByTestId("dropin-component");
-  //   expect(dropInComponent).toBeInTheDocument();
+    render(<CartPage />);
 
-  //   const paymentButton = screen.getByText("Make Payment");
-  //   fireEvent.click(paymentButton);
+    const dropIn = await screen.findByTestId("mock-dropin");
+    fireEvent.click(dropIn.querySelector("button"));
 
-  //   await waitFor(() => {
-  //     expect(setCartMock).toHaveBeenCalledWith([]);
-  //     expect(localStorage.removeItem).toHaveBeenCalledWith("cart");
-  //   });
+    const paymentButton = await screen.findByRole("button", {
+      name: /make payment/i,
+    });
 
-  //   await waitFor(() => {
-  //     expect(mockNavigate).toHaveBeenCalledWith("/dashboard/user/orders");
-  //   });
+    fireEvent.click(paymentButton);
 
-  //   await waitFor(() => {
-  //     expect(setLoadingMock).toHaveBeenCalledTimes(2);
-  //   });
-  // });
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/braintree/payment",
+        expect.objectContaining({
+          nonce: "test-nonce",
+          cart: [
+            {
+              _id: "1",
+              name: "Saber",
+              price: 444,
+              description: "Description",
+            },
+          ],
+        })
+      );
+    });
 
+    await waitFor(() => {
+      expect(localStorage.removeItem).toHaveBeenCalledWith("cart");
+    });
+
+    expect(setCartMock).toHaveBeenCalledWith([]);
+    await waitFor(() => {
+      expect(mockToast.success).toHaveBeenCalledWith(
+        expect.stringMatching(/Payment Completed Successfully/i)
+      );
+    });
+  });
 });
 
