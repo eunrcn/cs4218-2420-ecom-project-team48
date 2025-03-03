@@ -1,5 +1,29 @@
 import { jest } from "@jest/globals";
 import categoryModel from "../models/categoryModel";
+import orderModel from "../models/orderModel";
+import braintree from "braintree";
+import dotenv from "dotenv";
+import {
+  braintreeTokenController,
+  brainTreePaymentController,
+} from "./productController";
+
+dotenv.config();
+
+var gateway = new braintree.BraintreeGateway({
+  environment: braintree.Environment.Sandbox,
+  merchantId: process.env.BRAINTREE_MERCHANT_ID,
+  publicKey: process.env.BRAINTREE_PUBLIC_KEY,
+  privateKey: process.env.BRAINTREE_PRIVATE_KEY,
+});
+
+gateway.clientToken.generate({}, function (err, response) {
+  if (err) {
+    console.error("Error generating client token:", err);
+  } else {
+    console.log("Client Token:", response.clientToken);
+  }
+});
 
 const productModel = jest.fn();
 const fs = {
@@ -64,6 +88,132 @@ beforeAll(async () => {
         { _id: "C1", name: "Cat1", slug: "cat1" }, { _id: "C2", name: "Cat2", slug: "cat2" },
         { _id: "C3", name: "Cat3", slug: "cat3" }, { _id: "C4", name: "Cat4", slug: "cat4" }];
 });
+
+//   describe("braintreeTokenController", () => {
+//     let mockReq;
+//     let mockRes;
+
+//     beforeEach(() => {
+//       jest.clearAllMocks();
+
+//       mockReq = {};
+//       mockRes = {
+//         status: jest.fn().mockReturnThis(),
+//         send: jest.fn(),
+//       };
+//     });
+
+//     it("should return a token successfully", async () => {
+//       const mockResponse = { clientToken: "fakeClientToken" };
+
+//       // Mocking the braintree clientToken.generate method
+//       gateway.clientToken.generate = jest.fn((data, callback) => {
+//         callback(null, mockResponse);
+//       });
+
+//       await braintreeTokenController(mockReq, mockRes);
+
+//       expect(gateway.clientToken.generate).toHaveBeenCalledWith(
+//         {},
+//         expect.any(Function)
+//       );
+//       expect(mockRes.send).toHaveBeenCalledWith(mockResponse);
+//     });
+
+//     it("should return error when there is an issue generating the token", async () => {
+//       const mockError = { message: "Something went wrong" };
+
+//       // Mocking the braintree clientToken.generate method to return an error
+//       gateway.clientToken.generate = jest.fn((data, callback) => {
+//         callback(mockError, null);
+//       });
+
+//       await braintreeTokenController(mockReq, mockRes);
+
+//       expect(gateway.clientToken.generate).toHaveBeenCalledWith(
+//         {},
+//         expect.any(Function)
+//       );
+//       expect(mockRes.status).toHaveBeenCalledWith(500);
+//       expect(mockRes.send).toHaveBeenCalledWith(mockError);
+//     });
+//   });
+
+// describe("brainTreePaymentController", () => {
+//   let mockReq;
+//   let mockRes;
+//   let mockCart;
+
+//   beforeEach(() => {
+//     jest.clearAllMocks();
+
+//     // Mock request and response
+//     mockCart = [{ price: 100 }, { price: 200 }];
+
+//     mockReq = {
+//       body: {
+//         nonce: "fakeNonce",
+//         cart: mockCart,
+//       },
+//       user: { _id: "userId" },
+//     };
+//     mockRes = {
+//       status: jest.fn().mockReturnThis(),
+//       send: jest.fn(),
+//       json: jest.fn(),
+//     };
+//   });
+
+//   it("should process the payment and create an order successfully", async () => {
+//     const mockTransactionResult = {
+//       id: "fakeTransactionId",
+//       status: "settled",
+//     };
+
+//     // Mock the braintree transaction.sale method
+//     gateway.transaction.sale = jest.fn((transactionData, callback) => {
+//       callback(null, mockTransactionResult);
+//     });
+
+//     // Mock order model save function
+//     orderModel.prototype.save = jest.fn().mockResolvedValue({});
+
+//     await brainTreePaymentController(mockReq, mockRes);
+
+//     expect(gateway.transaction.sale).toHaveBeenCalledWith(
+//       expect.objectContaining({
+//         amount: 300,
+//         paymentMethodNonce: "fakeNonce",
+//       }),
+//       expect.any(Function)
+//     );
+//     expect(orderModel.prototype.save).toHaveBeenCalled();
+//     expect(mockRes.json).toHaveBeenCalledWith({ ok: true });
+//   });
+
+//   it("should return error if payment fails", async () => {
+//     const mockError = { message: "Payment failed" };
+
+//     // Mock the braintree transaction.sale method to return an error
+//     gateway.transaction.sale = jest.fn((transactionData, callback) => {
+//       callback(mockError, null);
+//     });
+
+//     await brainTreePaymentController(mockReq, mockRes);
+
+//     expect(gateway.transaction.sale).toHaveBeenCalledWith(
+//       expect.objectContaining({
+//         amount: 300,
+//         paymentMethodNonce: "fakeNonce",
+//       }),
+//       expect.any(Function)
+//     );
+//     expect(mockRes.status).toHaveBeenCalledWith(500);
+//     expect(mockRes.send).toHaveBeenCalledWith(mockError);
+//   });
+// });
+
+
 
 // createProductController
 describe("createProductController", () => {
@@ -1044,4 +1194,5 @@ describe("Product Category Controller Test", () => {
             message: "Error While Getting products",
         });
     });
+
 });
