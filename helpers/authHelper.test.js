@@ -1,5 +1,4 @@
 import { jest } from "@jest/globals";
-
 import bcrypt from "bcrypt";
 import { hashPassword, comparePassword } from "./authHelper.js";
 
