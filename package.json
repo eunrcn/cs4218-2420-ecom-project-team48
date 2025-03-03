@@ -26,12 +26,7 @@
     "concurrently": "^8.2.2",
     "cors": "^2.8.5",
     "date-fns": "^3.3.1",
-<<<<<<< HEAD
     "dotenv": "^16.4.7",
-=======
-    "dotenv": "^16.4.1",
-    "enzyme": "^3.11.0",
->>>>>>> 9fd63e112b358a7c8960592d54386acc03f479ce
     "express": "^4.18.2",
     "express-formidable": "^1.2.0",
     "jsonwebtoken": "^9.0.2",
