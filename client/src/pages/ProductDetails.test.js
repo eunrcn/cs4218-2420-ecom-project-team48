@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
 import ProductDetails from './ProductDetails';
@@ -71,11 +71,13 @@ describe('ProductDetails Component', () => {
       return Promise.reject(new Error('Invalid URL'));
     });
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Product Details')).toBeInTheDocument();
@@ -92,11 +94,13 @@ describe('ProductDetails Component', () => {
     const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     axios.get.mockRejectedValueOnce(new Error('Failed to fetch product'));
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(consoleLogSpy).toHaveBeenCalledWith(expect.any(Error));
@@ -115,11 +119,13 @@ describe('ProductDetails Component', () => {
       return Promise.reject(new Error('Invalid URL'));
     });
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Similar Products ➡️')).toBeInTheDocument();
@@ -139,37 +145,18 @@ describe('ProductDetails Component', () => {
       return Promise.reject(new Error('Invalid URL'));
     });
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(screen.getByText('No Similar Products found')).toBeInTheDocument();
     });
   });
-
-  // test('should format product price correctly', async () => {
-  //   axios.get.mockImplementation((url) => {
-  //     if (url.includes('/get-product')) {
-  //       return Promise.resolve({ data: { product: mockProduct } });
-  //     } else if (url.includes('/related-product')) {
-  //       return Promise.resolve({ data: { products: [] } });
-  //     }
-  //     return Promise.reject(new Error('Invalid URL'));
-  //   });
-
-  //   render(
-  //     <BrowserRouter>
-  //       <ProductDetails />
-  //     </BrowserRouter>
-  //   );
-
-  //   await waitFor(() => {
-  //     expect(screen.getByText('Price : $22.07')).toBeInTheDocument();
-  //   });
-  // });
 
   test('should handle error when fetching related products', async () => {
     const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
@@ -179,11 +166,13 @@ describe('ProductDetails Component', () => {
       .mockResolvedValueOnce({ data: { product: mockProduct } })
       .mockRejectedValueOnce(new Error('Failed to fetch related products'));
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(consoleLogSpy).toHaveBeenCalledWith(expect.any(Error));
@@ -207,11 +196,13 @@ describe('ProductDetails Component', () => {
       return Promise.reject(new Error('Invalid URL'));
     });
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       const truncatedText = longDescriptionProduct.description.substring(0, 60) + '...';
@@ -229,11 +220,13 @@ describe('ProductDetails Component', () => {
       return Promise.reject(new Error('Invalid URL'));
     });
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       const mainImage = screen.getByRole('img', { name: mockProduct.name });  // look for alt text
@@ -261,31 +254,36 @@ describe('ProductDetails Component', () => {
       return Promise.reject(new Error('Invalid URL'));
     });
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
-    await waitFor(() => {
+    await act(async () => {
       const moreDetailsButtons = screen.getAllByText('More Details');
       fireEvent.click(moreDetailsButtons[0]);
-      expect(mockNavigate).toHaveBeenCalledWith(`/product/${mockRelatedProducts[0].slug}`);
     });
+
+    expect(mockNavigate).toHaveBeenCalledWith(`/product/${mockRelatedProducts[0].slug}`);
   });
 
   test('should not fetch product when slug parameter is missing', async () => {
     // Override the default useParams mock for this test
     jest.spyOn(require('react-router-dom'), 'useParams').mockReturnValue({});
     
-    const axiosGetSpy = jest.spyOn(axios, 'get');
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <ProductDetails />
+        </BrowserRouter>
+      );
+    });
 
-    render(
-      <BrowserRouter>
-        <ProductDetails />
-      </BrowserRouter>
-    );
-
-    expect(axiosGetSpy).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(axios.get).not.toHaveBeenCalled();
+    });
   });
 });
