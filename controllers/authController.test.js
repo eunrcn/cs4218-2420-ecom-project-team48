@@ -172,10 +172,6 @@ describe("User Controller Tests", () => {
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => { });
-
-      // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
@@ -243,10 +239,7 @@ describe("User Controller Tests", () => {
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => { });
 
-      // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
@@ -334,10 +327,6 @@ describe("User Controller Tests", () => {
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => { });
-
-      // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
@@ -363,17 +352,15 @@ describe("User Controller Tests", () => {
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => { });
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
 
-      // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
 
       await testController(req, res);
 
-      expect(console.log).toHaveBeenCalledWith(expect.any(Error));
+      expect(logSpy).toHaveBeenCalledWith(expect.any(Error));
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({ error: expect.any(Error) })
       );
