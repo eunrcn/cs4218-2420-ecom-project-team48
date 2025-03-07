@@ -14,6 +14,8 @@ import {
   orderStatusController,
 } from "../controllers/authController.js";
 import dotenv from "dotenv";
+import { expect } from "@playwright/test";
+import { describe } from "node:test";
 
 dotenv.config();
 
@@ -30,6 +32,14 @@ const mockUser = {
   role: "user",
 };
 
+const mockOrders = [
+  {
+    _id: new mongoose.Types.ObjectId(),
+    products: [new mongoose.Types.ObjectId()],
+    buyer: new mongoose.Types.ObjectId(),
+  },
+];
+
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   await mongoose.connect(mongoServer.getUri(), {
@@ -37,6 +47,7 @@ beforeAll(async () => {
     useUnifiedTopology: true,
   });
   await userModel.deleteMany({});
+  await orderModel.deleteMany({});
 });
 
 afterAll(async () => {
@@ -54,6 +65,10 @@ describe("User Controller Tests", () => {
       send: jest.fn(),
       json: jest.fn(),
     };
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
   });
 
   describe("Register Controller", () => {
@@ -84,8 +99,8 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
-      expect(res.send).toHaveBeenCalledWith({ message: "Email is Required" });
+
+      expect(res.send).toHaveBeenCalledWith({ message: "Email is required" });
     });
 
     it("should return error if password is missing", async () => {
@@ -98,8 +113,8 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
-      expect(res.send).toHaveBeenCalledWith({ message: "Password is Required" });
+
+      expect(res.send).toHaveBeenCalledWith({ message: "Password is required" });
     });
 
     it("should return error if Phone no is missing", async () => {
@@ -112,8 +127,8 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
-      expect(res.send).toHaveBeenCalledWith({ message: "Phone no is Required" });
+
+      expect(res.send).toHaveBeenCalledWith({ message: "Phone no is required" });
     });
     it("should return error if address is missing", async () => {
       req.body = {
@@ -125,8 +140,8 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
-      expect(res.send).toHaveBeenCalledWith({ message: "Address is Required" });
+
+      expect(res.send).toHaveBeenCalledWith({ message: "Address is required" });
     });
 
     it("should return error if answer is missing", async () => {
@@ -139,8 +154,8 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
-      expect(res.send).toHaveBeenCalledWith({ message: "Answer is Required" });
+
+      expect(res.send).toHaveBeenCalledWith({ message: "Answer is required" });
     });
 
     it("should not register an existing user", async () => {
@@ -151,33 +166,29 @@ describe("User Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Already Register please login",
+          message: "Already registered please login",
         })
       );
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
-      // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await registerController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Errro in Registeration",
+          message: "Error in registration",
         })
       );
     });
 
 
-  }); 
+  });
 
   describe("Login Controller", () => {
     it("should login a registered user", async () => {
@@ -188,7 +199,7 @@ describe("User Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "login successfully",
+          message: "Login successfully",
         })
       );
 
@@ -207,7 +218,7 @@ describe("User Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Email is not registerd",
+          message: "Email is not registered",
         })
       );
 
@@ -228,16 +239,13 @@ describe("User Controller Tests", () => {
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
-      // Mock res.send to throw an error
+
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await loginController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -247,7 +255,7 @@ describe("User Controller Tests", () => {
       );
     });
 
-    
+
   });
 
   describe("Forgot Password Controller", () => {
@@ -280,7 +288,7 @@ describe("User Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Wrong Email Or Answer",
+          message: "Wrong email or answer",
         })
       );
     });
@@ -291,9 +299,9 @@ describe("User Controller Tests", () => {
         newPassword: "newpassword123",
       };
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.send).toHaveBeenCalledWith({ message: "Emai is required" });
+      expect(res.send).toHaveBeenCalledWith({ message: "Email is required" });
     });
 
     it("should return error if answer is missing", async () => {
@@ -302,9 +310,9 @@ describe("User Controller Tests", () => {
         newPassword: "newpassword123",
       };
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.send).toHaveBeenCalledWith({ message: "answer is required" });
+      expect(res.send).toHaveBeenCalledWith({ message: "Answer is required" });
     });
 
     it("should return error if password is missing", async () => {
@@ -313,22 +321,18 @@ describe("User Controller Tests", () => {
         answer: mockUser.answer,
       };
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
-      expect(res.send).toHaveBeenCalledWith({ message: "New Password is required" });
+      expect(res.send).toHaveBeenCalledWith({ message: "New password is required" });
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
-      // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -348,27 +352,25 @@ describe("User Controller Tests", () => {
     });
 
     it("should handle errors correctly", async () => {
-      // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
-      // Mock res.send to throw an error
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await testController(req, res);
-  
-      expect(console.log).toHaveBeenCalledWith(expect.any(Error));
+
+      expect(logSpy).toHaveBeenCalledWith(expect.any(Error));
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({ error: expect.any(Error) })
       );
     });
-    
+
   });
 
   describe("Update Profile Controller", () => {
-    it("should update user profile", async () => {
-      req.body = { name: "Updated User", phone: "9876543210" };
+    it("should update user name", async () => {
+      req.body = { name: "Updated User", password: "123456" };
       req.user = { _id: userId };
 
       await updateProfileController(req, res);
@@ -377,7 +379,7 @@ describe("User Controller Tests", () => {
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: true,
-          message: "Profile Updated SUccessfully",
+          message: "Profile updated successfully",
         })
       );
 
@@ -385,37 +387,190 @@ describe("User Controller Tests", () => {
       expect(updatedUser.name).toBe("Updated User");
     });
 
-    it("should return an error if password is less than 6 characters", async () => {
-      req.body = {
-        name: "Updated User",
-        phone: "9876543210",
-        password: "123",
-      };
+    it("should update user phone", async () => {
+      req.body = { phone: "12345678", password: "123456" };
       req.user = { _id: userId };
-  
+
+      await updateProfileController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Profile updated successfully",
+        })
+      );
+
+      const updatedUser = await userModel.findById(userId);
+      expect(updatedUser.phone).toBe("12345678");
+    });
+
+    it("should update user address", async () => {
+      req.body = { address: "Updated Address", password: "123456" };
+      req.user = { _id: userId };
+
+      await updateProfileController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: true,
+          message: "Profile updated successfully",
+        })
+      );
+
+      const updatedUser = await userModel.findById(userId);
+      expect(updatedUser.address).toBe("Updated Address");
+    });
+
+
+
+    it("should return an error if password is less than 6 characters", async () => {
+      req.body = { password: "123" };
+      req.user = { _id: userId };
+
       await updateProfileController(req, res);
 
       expect(res.json).toHaveBeenCalledWith({
-        error: "Passsword is required and 6 character long",
+        error: "Passsword is required and it must be 6 characters long",
       });
     });
 
     it("should return a 400 error when profile update fails", async () => {
       req.body = { name: "Updated User", phone: "9876543210" };
       req.user = { _id: userId };
-  
-      // Mock `findByIdAndUpdate` to throw an error
+
       jest.spyOn(userModel, "findByIdAndUpdate").mockRejectedValueOnce(new Error("Database error"));
-  
+
       await updateProfileController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
           success: false,
-          message: "Error WHile Update profile",
+          message: "Error while updating profile",
         })
       );
+    });
+
+  });
+
+  describe("Get Orders Controller", () => {
+    it("should return orders for a user", async () => {
+      req.user = { _id: userId };
+      mockOrders[0].buyer = userId;
+      orderModel.populate = jest.fn().mockResolvedValueOnce(mockOrders);
+
+      await orderModel.create(mockOrders);
+
+      await getOrdersController(req, res);
+
+      const returnedOrders = res.json.mock.calls[0][0];
+      expect(returnedOrders.length).toBe(1);
+      expect(returnedOrders[0]._id).toStrictEqual(mockOrders[0]._id);
+      expect(returnedOrders[0].buyer).toStrictEqual(mockOrders[0].buyer);
+      expect(returnedOrders[0].products).toStrictEqual(mockOrders[0].products);
+      await orderModel.deleteMany({});
+    });
+
+
+    it("should return an error when orders retrieval fails", async () => {
+      req.user = { _id: userId };
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+      const mockError = new Error("Database error");
+      orderModel.find = jest.fn().mockImplementationOnce(() => {
+        throw mockError;
+      });
+
+      await getOrdersController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error while getting orders",
+        })
+      );
+      expect(logSpy).toHaveBeenCalledWith(mockError);
+      logSpy.mockRestore();
+    });
+
+  });
+
+
+  describe("Get All Orders Controller", () => {
+    it("should return all orders successfully", async () => {
+      orderModel.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockResolvedValue(mockOrders),
+      });
+
+      await getAllOrdersController(req, res);
+
+      expect(orderModel.find).toHaveBeenCalledWith({});
+      expect(res.json).toHaveBeenCalledWith(mockOrders);
+    });
+
+    it("should return an error when all order retrieval fails", async () => {
+      const mockError = new Error("Database error");
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+
+      orderModel.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockRejectedValue(mockError),
+      });
+
+      await getAllOrdersController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error while getting orders",
+          error: mockError,
+        })
+      );
+      expect(logSpy).toHaveBeenCalledWith(mockError);
+    });
+  });
+
+  describe("Order Status Controller", () => {
+    it("should update the order status successfully", async () => {
+      req.body.status = "Shipped";
+      req.params = { orderId: mockOrders[0]._id };
+
+      orderModel.findByIdAndUpdate = jest.fn().mockResolvedValue(mockOrders[0]);
+
+      await orderStatusController(req, res);
+
+      expect(orderModel.findByIdAndUpdate).toHaveBeenCalledWith(
+        req.params.orderId,
+        { status: req.body.status },
+        { new: true }
+      );
+      expect(res.json).toHaveBeenCalledWith(mockOrders[0]);
+    });
+
+    it("should return an error when updating order fails", async () => {
+      req.body.status = "Shipped";
+      req.params = { orderId: mockOrders[0]._id };
+
+      const mockError = new Error("Database error");
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+
+      orderModel.findByIdAndUpdate = jest.fn().mockRejectedValue(mockError);
+
+      await orderStatusController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error while updating order",
+          error: mockError,
+        })
+      );
+      expect(logSpy).toHaveBeenCalledWith(mockError);
     });
 
   });
