@@ -14,6 +14,7 @@ import {
   orderStatusController,
 } from "../controllers/authController.js";
 import dotenv from "dotenv";
+import { expect } from "@playwright/test";
 
 dotenv.config();
 
@@ -444,10 +445,11 @@ describe("User Controller Tests", () => {
       expect(returnedOrders[0]._id).toStrictEqual(mockOrders[0]._id);
       expect(returnedOrders[0].buyer).toStrictEqual(mockOrders[0].buyer);
       expect(returnedOrders[0].products).toStrictEqual(mockOrders[0].products);
+      await orderModel.deleteMany({});
     });
 
 
-    it("should return a 500 error when orders retrieval fails", async () => {
+    it("should return an error when orders retrieval fails", async () => {
       const mockError = new Error("Database error");
       jest.spyOn(console, "log").mockImplementation(() => {});
       orderModel.find = jest.fn().mockRejectedValueOnce(mockError);
@@ -467,8 +469,23 @@ describe("User Controller Tests", () => {
 
   });
 
-  
 
+  describe("Get All Orders Controller", () => {
+    it("should return type error when retrieving all orders", async () => {
+      jest.spyOn(console, "log").mockImplementation(() => {});
 
+      await orderModel.create(mockOrders);      
+      await getAllOrdersController(req, res);
 
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error WHile Geting Orders",
+        })
+      );
+     expect(console.log).toHaveBeenCalledWith(expect.any(Error));
+      await orderModel.deleteMany({});
+    });
+  });
 });
