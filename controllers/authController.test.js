@@ -30,6 +30,14 @@ const mockUser = {
   role: "user",
 };
 
+const mockOrders = [
+  {
+    _id: new mongoose.Types.ObjectId(),
+    products: [new mongoose.Types.ObjectId()],
+    buyer: new mongoose.Types.ObjectId(),
+  },
+];
+
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   await mongoose.connect(mongoServer.getUri(), {
@@ -37,6 +45,7 @@ beforeAll(async () => {
     useUnifiedTopology: true,
   });
   await userModel.deleteMany({});
+  await orderModel.deleteMany({});
 });
 
 afterAll(async () => {
@@ -84,7 +93,7 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
+
       expect(res.send).toHaveBeenCalledWith({ message: "Email is Required" });
     });
 
@@ -98,7 +107,7 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
+
       expect(res.send).toHaveBeenCalledWith({ message: "Password is Required" });
     });
 
@@ -112,7 +121,7 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
+
       expect(res.send).toHaveBeenCalledWith({ message: "Phone no is Required" });
     });
     it("should return error if address is missing", async () => {
@@ -125,7 +134,7 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
+
       expect(res.send).toHaveBeenCalledWith({ message: "Address is Required" });
     });
 
@@ -139,7 +148,7 @@ describe("User Controller Tests", () => {
         role: mockUser.user,
       };
       await registerController(req, res);
-  
+
       expect(res.send).toHaveBeenCalledWith({ message: "Answer is Required" });
     });
 
@@ -158,15 +167,15 @@ describe("User Controller Tests", () => {
 
     it("should handle errors correctly", async () => {
       // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
+      jest.spyOn(console, "log").mockImplementation(() => { });
+
       // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await registerController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -177,7 +186,7 @@ describe("User Controller Tests", () => {
     });
 
 
-  }); 
+  });
 
   describe("Login Controller", () => {
     it("should login a registered user", async () => {
@@ -229,15 +238,15 @@ describe("User Controller Tests", () => {
 
     it("should handle errors correctly", async () => {
       // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
+      jest.spyOn(console, "log").mockImplementation(() => { });
+
       // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await loginController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -247,7 +256,7 @@ describe("User Controller Tests", () => {
       );
     });
 
-    
+
   });
 
   describe("Forgot Password Controller", () => {
@@ -291,7 +300,7 @@ describe("User Controller Tests", () => {
         newPassword: "newpassword123",
       };
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({ message: "Emai is required" });
     });
@@ -302,7 +311,7 @@ describe("User Controller Tests", () => {
         newPassword: "newpassword123",
       };
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({ message: "answer is required" });
     });
@@ -313,22 +322,22 @@ describe("User Controller Tests", () => {
         answer: mockUser.answer,
       };
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith({ message: "New Password is required" });
     });
 
     it("should handle errors correctly", async () => {
       // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
+      jest.spyOn(console, "log").mockImplementation(() => { });
+
       // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await forgotPasswordController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -349,21 +358,21 @@ describe("User Controller Tests", () => {
 
     it("should handle errors correctly", async () => {
       // Mock console.log to track calls
-      jest.spyOn(console, "log").mockImplementation(() => {});
-  
+      jest.spyOn(console, "log").mockImplementation(() => { });
+
       // Mock res.send to throw an error
       jest.spyOn(res, "send").mockImplementationOnce(() => {
         throw new Error("Unexpected Error");
       });
-  
+
       await testController(req, res);
-  
+
       expect(console.log).toHaveBeenCalledWith(expect.any(Error));
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({ error: expect.any(Error) })
       );
     });
-    
+
   });
 
   describe("Update Profile Controller", () => {
@@ -392,7 +401,7 @@ describe("User Controller Tests", () => {
         password: "123",
       };
       req.user = { _id: userId };
-  
+
       await updateProfileController(req, res);
 
       expect(res.json).toHaveBeenCalledWith({
@@ -403,12 +412,12 @@ describe("User Controller Tests", () => {
     it("should return a 400 error when profile update fails", async () => {
       req.body = { name: "Updated User", phone: "9876543210" };
       req.user = { _id: userId };
-  
+
       // Mock `findByIdAndUpdate` to throw an error
       jest.spyOn(userModel, "findByIdAndUpdate").mockRejectedValueOnce(new Error("Database error"));
-  
+
       await updateProfileController(req, res);
-  
+
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.send).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -419,4 +428,47 @@ describe("User Controller Tests", () => {
     });
 
   });
+
+  describe("Get Orders Controller", () => {
+    it("should return orders for a user", async () => {
+      req.user = { _id: userId };
+      mockOrders[0].buyer = userId;
+      orderModel.populate = jest.fn().mockResolvedValueOnce(mockOrders);
+
+      await orderModel.create(mockOrders);
+
+      await getOrdersController(req, res);
+
+      const returnedOrders = res.json.mock.calls[0][0];
+      expect(returnedOrders.length).toBe(1);
+      expect(returnedOrders[0]._id).toStrictEqual(mockOrders[0]._id);
+      expect(returnedOrders[0].buyer).toStrictEqual(mockOrders[0].buyer);
+      expect(returnedOrders[0].products).toStrictEqual(mockOrders[0].products);
+    });
+
+
+    it("should return a 500 error when orders retrieval fails", async () => {
+      const mockError = new Error("Database error");
+      jest.spyOn(console, "log").mockImplementation(() => {});
+      orderModel.find = jest.fn().mockRejectedValueOnce(mockError);
+
+      await getOrdersController(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(500);
+      expect(res.send).toHaveBeenCalledWith(
+        expect.objectContaining({
+          success: false,
+          message: "Error WHile Geting Orders",
+        })
+      );
+      expect(console.log).toHaveBeenCalledWith(mockError);
+    });
+
+
+  });
+
+  
+
+
+
 });
