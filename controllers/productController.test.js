@@ -25,7 +25,7 @@ let productFiltersController;
 let productCountController;
 let productListController;
 let searchProductController;
-let realtedProductController;
+let relatedProductController;
 let productCategoryController;
 
 let mockProducts;
@@ -44,7 +44,7 @@ beforeAll(async () => {
     productCountController = productControllerModule.productCountController;
     productListController = productControllerModule.productListController;
     searchProductController = productControllerModule.searchProductController;
-    realtedProductController = productControllerModule.realtedProductController;
+    relatedProductController = productControllerModule.relatedProductController;
     productCategoryController = productControllerModule.productCategoryController;
 
     mockProducts = [{
@@ -129,11 +129,11 @@ describe("createProductController", () => {
   });
 
   it.each([
-    { field: "name", expectedError: "Name is Required" },
-    { field: "description", expectedError: "Description is Required" },
-    { field: "price", expectedError: "Price is Required" },
-    { field: "category", expectedError: "Category is Required" },
-    { field: "quantity", expectedError: "Quantity is Required" },
+    { field: "name", expectedError: "Name is required" },
+    { field: "description", expectedError: "Description is required" },
+    { field: "price", expectedError: "Price is required" },
+    { field: "category", expectedError: "Category is required" },
+    { field: "quantity", expectedError: "Quantity is required" },
   ])("should return error when $field is missing", async ({ field, expectedError }) => {
     // Use this req for testing field validation
     const req = {
@@ -162,7 +162,7 @@ describe("createProductController", () => {
 
     expect(mockRes.status).toHaveBeenCalledWith(500);
     expect(mockRes.send).toHaveBeenCalledWith({
-      error: "photo is Required and should be less then 1mb", // yes this is misspelled
+      error: "Photo is required and it should be less then 1MB",
     });
   });
 
@@ -176,7 +176,7 @@ describe("createProductController", () => {
     expect(mockRes.send).toHaveBeenCalledWith({
       success: false,
       error: mockError,
-      message: "Error in crearing product", // yes this is misspelled
+      message: "Error in clearing product",
     });
   });
 });
@@ -215,7 +215,7 @@ describe("deleteProductController", () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: true,
-      message: "Product Deleted successfully",
+      message: "Product deleted successfully",
     });
   });
 
@@ -243,7 +243,7 @@ describe("deleteProductController", () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: true,
-      message: "Product Deleted successfully",
+      message: "Product deleted successfully",
     });
   });
 });
@@ -322,11 +322,11 @@ describe("updateProductController", () => {
   });
 
   it.each([
-    { field: "name", expectedError: "Name is Required" },
-    { field: "description", expectedError: "Description is Required" },
-    { field: "price", expectedError: "Price is Required" },
-    { field: "category", expectedError: "Category is Required" },
-    { field: "quantity", expectedError: "Quantity is Required" },
+    { field: "name", expectedError: "Name is required" },
+    { field: "description", expectedError: "Description is required" },
+    { field: "price", expectedError: "Price is required" },
+    { field: "category", expectedError: "Category is required" },
+    { field: "quantity", expectedError: "Quantity is required" },
   ])("should return error when $field is missing", async ({ field, expectedError }) => {
     // Use this req for testing field validation
     const req = {
@@ -355,7 +355,7 @@ describe("updateProductController", () => {
 
     expect(mockRes.status).toHaveBeenCalledWith(500);
     expect(mockRes.send).toHaveBeenCalledWith({
-      error: "photo is Required and should be less then 1mb", // yes this is misspelled
+      error: "Photo is required and it should be less then 1MB",
     });
   });
 
@@ -369,7 +369,7 @@ describe("updateProductController", () => {
     expect(mockRes.send).toHaveBeenCalledWith({
       success: false,
       error: mockError,
-      message: "Error in Updte product", // yes this is misspelled
+      message: "Error in updating product",
     });
   });
 
@@ -426,7 +426,7 @@ describe("Get Product Controller Test", () => {
         expect(res.send).toHaveBeenCalledWith({
             success: true,
             counTotal: mockProducts.length,
-            message: "ALlProducts ",
+            message: "AllProducts Fetched",
             products: mockProducts,
         });
     });
@@ -444,7 +444,7 @@ describe("Get Product Controller Test", () => {
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.send).toHaveBeenCalledWith({
             success: false,
-            message: "Erorr in getting products",
+            message: "Error in getting products",
             error: "Database error",
         });
     });
@@ -522,7 +522,7 @@ describe("Get Single Product Controller Test", () => {
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.send).toHaveBeenCalledWith({
             success: false,
-            message: "Eror while getitng single product",
+            message: "Error while getting single product",
             error: dbError,
         });
     });
@@ -584,7 +584,7 @@ describe("Product Photo Controller Test", () => {
         expect(res.status).toHaveBeenCalledWith(500);
         expect(res.send).toHaveBeenCalledWith({
             success: false,
-            message: "Erorr while getting photo",
+            message: "Error while getting photo",
             error: dbError,
         });
     });
@@ -693,7 +693,7 @@ describe("Product Filter Controller Test", () => {
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.send).toHaveBeenCalledWith(expect.objectContaining({
             success: false,
-            message: "Error WHile Filtering Products",
+            message: "Error while filtering products",
             error: dbError,
         }));
     });
@@ -800,7 +800,7 @@ describe("Product List Controller Test", () => {
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.send).toHaveBeenCalledWith({
             success: false,
-            message: "error in per page ctrl",
+            message: "Error in per page controller",
             error: dbError,
         });
     });
@@ -865,7 +865,7 @@ describe("Search Product Controller Test", () => {
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.send).toHaveBeenCalledWith({
             success: false,
-            message: "Error In Search Product API",
+            message: "Error in searching products",
             error: dbError,
         });
     });
@@ -893,7 +893,7 @@ describe("Related Product Controller Test", () => {
 
         productModel.find = jest.fn().mockReturnValue(mockQuery);
 
-        await realtedProductController(req, res);
+        await relatedProductController(req, res);
 
         expect(productModel.find).toHaveBeenCalledWith({
             category: req.params.cid,
@@ -920,7 +920,7 @@ describe("Related Product Controller Test", () => {
 
         productModel.find = jest.fn().mockReturnValue(mockQuery);
 
-        await realtedProductController(req, res);
+        await relatedProductController(req, res);
 
         expect(productModel.find).toHaveBeenCalledWith({
             category: req.params.cid,
@@ -943,13 +943,13 @@ describe("Related Product Controller Test", () => {
             throw dbError;
         });
 
-        await realtedProductController(req, res);
+        await relatedProductController(req, res);
 
         expect(productModel.find).toHaveBeenCalled();
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.send).toHaveBeenCalledWith({
             success: false,
-            message: "error while geting related product",
+            message: "Error while getting related product",
             error: dbError,
         });
     });
@@ -1041,7 +1041,7 @@ describe("Product Category Controller Test", () => {
         expect(res.send).toHaveBeenCalledWith({
             success: false,
             error: dbError,
-            message: "Error While Getting products",
+            message: "Error while getting products",
         });
     });
 });
