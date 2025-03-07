@@ -46,16 +46,16 @@ describe("Auth Middleware Tests", () => {
         });
 
         test("should not call next() with invalid token", async () => {
-            const error = new Error("Mock Error");
+            const mockError = new Error("Mock Error");
             const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
 
             JWT.verify.mockImplementation(() => {
-                throw error;
+                throw mockError;
             });
 
             req.headers.authorization = "invalid-token";
             await requireSignIn(req, res, next);
-            expect(logSpy).toHaveBeenCalledWith(error);
+            expect(logSpy).toHaveBeenCalledWith(mockError);
             expect(next).not.toHaveBeenCalled();
             logSpy.mockRestore();
         });
@@ -90,25 +90,25 @@ describe("Auth Middleware Tests", () => {
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                message: "UnAuthorized Access",
+                message: "Unauthorized Access",
             });
         });
 
         test("should log error when isAdmin fails", async () => {
-            const error = new Error("Mock Error");
+            const mockError = new Error("Mock Error");
             const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
 
             req.user = { _id: "123" };
-            userModel.findById.mockRejectedValue(error);
+            userModel.findById.mockRejectedValueOnce(mockError);
 
             await isAdmin(req, res, next);
 
             expect(userModel.findById).toHaveBeenCalledWith("123");
-            expect(logSpy).toHaveBeenCalledWith(error);
+            expect(logSpy).toHaveBeenCalledWith(mockError);
             expect(res.status).toHaveBeenCalledWith(401);
             expect(res.send).toHaveBeenCalledWith({
                 success: false,
-                error,
+                error: mockError,
                 message: "Error in admin middleware",
             });
             logSpy.mockRestore();
