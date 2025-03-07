@@ -66,6 +66,10 @@ describe("User Controller Tests", () => {
     };
   });
 
+  afterEach(async () => {
+    jest.restoreAllMocks();
+  });
+
   describe("Register Controller", () => {
     it("should register a new user", async () => {
       req.body = mockUser;
@@ -450,9 +454,12 @@ describe("User Controller Tests", () => {
 
 
     it("should return an error when orders retrieval fails", async () => {
+      req.user = { _id: userId };
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
       const mockError = new Error("Database error");
-      jest.spyOn(console, "log").mockImplementation(() => {});
-      orderModel.find = jest.fn().mockRejectedValueOnce(mockError);
+      orderModel.find = jest.fn().mockImplementationOnce(() => {
+        throw mockError;
+      });
 
       await getOrdersController(req, res);
 
@@ -463,18 +470,36 @@ describe("User Controller Tests", () => {
           message: "Error WHile Geting Orders",
         })
       );
-      expect(console.log).toHaveBeenCalledWith(mockError);
+      expect(logSpy).toHaveBeenCalledWith(mockError);
+      logSpy.mockRestore();
+      await orderModel.deleteMany({});
     });
-
 
   });
 
 
   describe("Get All Orders Controller", () => {
-    it("should return type error when retrieving all orders", async () => {
-      jest.spyOn(console, "log").mockImplementation(() => {});
+    it("should return all orders successfully", async () => {
+      orderModel.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockResolvedValue(mockOrders),
+      });
 
-      await orderModel.create(mockOrders);      
+      await getAllOrdersController(req, res);
+
+      expect(orderModel.find).toHaveBeenCalledWith({});
+      expect(res.json).toHaveBeenCalledWith(mockOrders);
+    });
+
+    it("should return an error when order retrieval fails", async () => {
+      const mockError = new Error("Database error");
+      const logSpy = jest.spyOn(console, "log").mockImplementation(() => { });
+
+      orderModel.find = jest.fn().mockReturnValue({
+        populate: jest.fn().mockReturnThis(),
+        sort: jest.fn().mockRejectedValue(mockError),
+      });
+
       await getAllOrdersController(req, res);
 
       expect(res.status).toHaveBeenCalledWith(500);
@@ -482,10 +507,12 @@ describe("User Controller Tests", () => {
         expect.objectContaining({
           success: false,
           message: "Error WHile Geting Orders",
+          error: mockError,
         })
       );
-     expect(console.log).toHaveBeenCalledWith(expect.any(Error));
-      await orderModel.deleteMany({});
+      expect(logSpy).toHaveBeenCalledWith(mockError);
     });
   });
+  
+
 });
