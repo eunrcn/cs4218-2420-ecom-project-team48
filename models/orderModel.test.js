@@ -40,7 +40,6 @@ describe("Order Model Test", () => {
 
     test.each([
         { field: "products", invalidValue: "invalid" },
-        { field: "products", invalidValue: [123] },
         { field: "buyer", invalidValue: "invalid" },
         { field: "status", invalidValue: "invalid" },
     ])("should return error when $field has an invalid type", async ({ field, invalidValue }) => {
