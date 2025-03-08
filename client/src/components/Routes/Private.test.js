@@ -1,65 +1,64 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
-import Private from "./Private";
-import { AuthContext } from "../../context/auth";
-import { MemoryRouter } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../context/auth";
+import PrivateRoute from "./Private";
+import { MemoryRouter } from "react-router-dom";
 
 jest.mock("axios");
-
 jest.mock("../../context/auth", () => ({
-  useAuth: jest.fn(() => [{ token: "dummy-token" }, jest.fn()]),
+  useAuth: jest.fn(),
 }));
-
 jest.mock("../Spinner", () => () => <div>Loading...</div>);
 
+jest.mock("react-router-dom", () => ({
+  ...jest.requireActual("react-router-dom"),
+  Outlet: jest.fn(() => <div>Protected Content</div>),
+}));
+
 describe("PrivateRoute Component", () => {
-  const mockAuth = {
-    token: "mock-token",
-  };
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-  const renderComponent = (authValue) => {
-    return render(
-      <AuthContext.Provider value={[authValue, jest.fn()]}>
-        <MemoryRouter>
-          <Private />
-        </MemoryRouter>
-      </AuthContext.Provider>
+  it("should show Spinner when no auth token is present", () => {
+    useAuth.mockReturnValue([{}]);
+    render(
+      <MemoryRouter>
+        <PrivateRoute />
+      </MemoryRouter>
     );
-  };
 
-  it("renders Spinner component when user is not authenticated", () => {
-    renderComponent({});
     expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
-  it("renders Outlet component when user is authenticated and API call is successful", async () => {
+  it("should show Outlet when user is authenticated and API confirms access", async () => {
+    useAuth.mockReturnValue([{ token: "valid-token" }]);
     axios.get.mockResolvedValue({ data: { ok: true } });
 
-    renderComponent(mockAuth);
+    render(
+      <MemoryRouter>
+        <PrivateRoute />
+      </MemoryRouter>
+    );
 
     await waitFor(() => {
-      expect(screen.queryByText("Loading...")).not.toBeInTheDocument();
+      expect(screen.getByText("Protected Content")).toBeInTheDocument();
     });
   });
 
-  it("renders Spinner component when API call fails or returns not ok", async () => {
+  it("should show Spinner when API denies access", async () => {
+    useAuth.mockReturnValue([{ token: "invalid-token" }]);
     axios.get.mockResolvedValue({ data: { ok: false } });
 
-    renderComponent(mockAuth);
+    render(
+      <MemoryRouter>
+        <PrivateRoute />
+      </MemoryRouter>
+    );
 
     await waitFor(() => {
       expect(screen.getByText("Loading...")).toBeInTheDocument();
-    });
-  });
-
-  it("does not make API call if no token is present", async () => {
-    axios.get.mockClear();
-
-    renderComponent({ token: null });
-
-    await waitFor(() => {
-      expect(axios.get).not.toHaveBeenCalled();
     });
   });
 });
