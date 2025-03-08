@@ -16,6 +16,22 @@ jest.unstable_mockModule("fs", () => ({
   default: fs,
 }));
 
+// Mock Braintree gateway
+const mockGateway = {
+  clientToken: {
+    generate: jest.fn()
+  }
+};
+
+jest.unstable_mockModule("braintree", () => ({
+  default: {
+    BraintreeGateway: jest.fn(() => mockGateway),
+    Environment: {
+      Sandbox: "sandbox"
+    }
+  }
+}));
+
 let createProductController;
 let deleteProductController;
 let updateProductController;
@@ -28,6 +44,7 @@ let productListController;
 let searchProductController;
 let relatedProductController;
 let productCategoryController;
+let braintreeTokenController;
 
 let mockProducts;
 let mockCategories;
@@ -48,7 +65,8 @@ beforeAll(async () => {
   searchProductController = productControllerModule.searchProductController;
   relatedProductController = productControllerModule.relatedProductController;
   productCategoryController = productControllerModule.productCategoryController;
-
+  braintreeTokenController = productControllerModule.braintreeTokenController;
+  
   mockProducts = [{
     _id: "1", name: "Product1", slug: "product1", description: "Test product", price: 499.99, category: "C1", quantity: 10, shipping: false,
     photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
@@ -1034,5 +1052,70 @@ describe("Product Category Controller Test", () => {
       error: mockError,
       message: "Error while getting products",
     });
+  });
+});
+
+describe("Braintree Token Controller Test", () => {
+  let req, res;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    req = {};
+    res = {
+        status: jest.fn().mockReturnThis(),
+        send: jest.fn(),
+    };
+
+    mockGateway.clientToken.generate.mockReset();
+  });
+
+  test("should generate and send client token successfully", async () => {
+    const mockResponse = { clientToken: "mock-client-token-220722" };
+    mockGateway.clientToken.generate.mockImplementation((options, callback) => {
+      callback(null, mockResponse);
+    });
+
+    await braintreeTokenController(req, res);
+
+    expect(mockGateway.clientToken.generate).toHaveBeenCalledWith({}, expect.any(Function));
+    expect(res.send).toHaveBeenCalledWith(mockResponse);
+    expect(res.status).not.toHaveBeenCalled();
+  });
+
+  test("should handle error when token generation fails", async () => {
+    const mockError = new Error("Token generation failed");
+    mockGateway.clientToken.generate.mockImplementation((options, callback) => {
+      callback(mockError, null);
+    });
+
+    await braintreeTokenController(req, res);
+
+    expect(mockGateway.clientToken.generate).toHaveBeenCalledWith({}, expect.any(Function));
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith(mockError);
+  });
+
+  test("should handle incorrect gateway response", async () => {
+    const incorrectResponse = { /* missing clientToken */ };
+    mockGateway.clientToken.generate.mockImplementation((options, callback) => {
+      callback(null, incorrectResponse);
+    });
+
+    await braintreeTokenController(req, res);
+
+    expect(mockGateway.clientToken.generate).toHaveBeenCalledWith({}, expect.any(Function));
+    expect(res.send).toHaveBeenCalledWith(incorrectResponse);
+  });
+
+  test("should handle case where both error and response are null", async () => {
+    mockGateway.clientToken.generate.mockImplementation((options, callback) => {
+      callback(null, null);
+    });
+
+    await braintreeTokenController(req, res);
+
+    expect(mockGateway.clientToken.generate).toHaveBeenCalledWith({}, expect.any(Function));
+    expect(res.send).toHaveBeenCalledWith(null);
   });
 });
