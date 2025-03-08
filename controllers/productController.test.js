@@ -153,7 +153,7 @@ describe("createProductController", () => {
     fs.readFileSync.mockReturnValue(Buffer.from("mock image data"));
   });
 
-  it("should create product successfully", async () => {
+  test("should create product successfully", async () => {
     await createProductController(mockReq, mockRes);
 
     expect(mockRes.status).toHaveBeenCalledWith(201);
@@ -166,7 +166,25 @@ describe("createProductController", () => {
     expect(fs.readFileSync).toHaveBeenCalledWith("test/path/photo.jpg");
   });
 
-  it.each([
+  test("should create product successfully when no photo is provided", async () => {
+    const reqWithoutPhoto = {
+      ...mockReq,
+      files: {} // Empty files object - no photo provided
+    };
+
+    await createProductController(reqWithoutPhoto, mockRes);
+
+    expect(mockRes.status).toHaveBeenCalledWith(201);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: true,
+      message: "Product Created Successfully",
+      products: expect.any(Object),
+    });
+    expect(mockProduct.save).toHaveBeenCalled();
+    expect(fs.readFileSync).not.toHaveBeenCalled();
+  });
+
+  test.each([
     { field: "name", expectedError: "Name is required" },
     { field: "description", expectedError: "Description is required" },
     { field: "price", expectedError: "Price is required" },
@@ -193,7 +211,7 @@ describe("createProductController", () => {
     mockRes.send.mockClear();
   });
 
-  it("should return error when photo size exceeds 1MB", async () => {
+  test("should return error when photo size exceeds 1MB", async () => {
     mockReq.files.photo.size = 1500000; // 1.5MB
 
     await createProductController(mockReq, mockRes);
@@ -204,7 +222,7 @@ describe("createProductController", () => {
     });
   });
 
-  it("should handle errors", async () => {
+  test("should handle errors", async () => {
     mockProduct.save.mockRejectedValueOnce(mockError);
 
     await createProductController(mockReq, mockRes);
@@ -242,7 +260,7 @@ describe("deleteProductController", () => {
     productModel.select = jest.fn().mockResolvedValue({});
   });
 
-  it("should delete product successfully", async () => {
+  test("should delete product successfully", async () => {
     await deleteProductController(mockReq, mockRes);
 
     // Verify mongoose methods called correctly
@@ -256,7 +274,7 @@ describe("deleteProductController", () => {
     });
   });
 
-  it("should handle errors when deleting product fails", async () => {
+  test("should handle errors when deleting product fails", async () => {
     // Mock DB error
     productModel.select.mockRejectedValueOnce(mockError);
 
@@ -270,7 +288,7 @@ describe("deleteProductController", () => {
     });
   });
 
-  it("should handle case when product is not found", async () => {
+  test("should handle case when product is not found", async () => {
     // Mock DB query ok but no product found
     productModel.select.mockResolvedValueOnce(null);
 
@@ -337,7 +355,7 @@ describe("updateProductController", () => {
     fs.readFileSync.mockReturnValue(Buffer.from("mock updated image data"));
   });
 
-  it("should update product successfully", async () => {
+  test("should update product successfully", async () => {
     await updateProductController(mockReq, mockRes);
 
     expect(productModel.findByIdAndUpdate).toHaveBeenCalledWith(
@@ -357,7 +375,7 @@ describe("updateProductController", () => {
     });
   });
 
-  it.each([
+  test.each([
     { field: "name", expectedError: "Name is required" },
     { field: "description", expectedError: "Description is required" },
     { field: "price", expectedError: "Price is required" },
@@ -384,7 +402,7 @@ describe("updateProductController", () => {
     mockRes.send.mockClear();
   });
 
-  it("should return error when photo size exceeds 1MB", async () => {
+  test("should return error when photo size exceeds 1MB", async () => {
     mockReq.files.photo.size = 1500000; // 1.5MB
 
     await updateProductController(mockReq, mockRes);
@@ -395,7 +413,7 @@ describe("updateProductController", () => {
     });
   });
 
-  it("should handle database errors", async () => {
+  test("should handle database errors", async () => {
     productModel.findByIdAndUpdate.mockRejectedValueOnce(mockError);
 
     await updateProductController(mockReq, mockRes);
@@ -408,7 +426,7 @@ describe("updateProductController", () => {
     });
   });
 
-  it("should update product without photo if no photo provided", async () => {
+  test("should update product without photo if no photo provided", async () => {
     mockReq.files = {};
 
     await updateProductController(mockReq, mockRes);
@@ -1134,6 +1152,21 @@ describe("Braintree Token Controller Test", () => {
 
     expect(mockGateway.clientToken.generate).toHaveBeenCalledWith({}, expect.any(Function));
     expect(res.send).toHaveBeenCalledWith(null);
+  });
+
+  test("should handle gateway with missing clientToken property", async () => {
+    const originalClientToken = mockGateway.clientToken;
+    mockGateway.clientToken = undefined;
+    const consoleLogSpy = jest.spyOn(console, 'log');
+
+    await braintreeTokenController(req, res);
+
+    expect(consoleLogSpy).toHaveBeenCalledWith(expect.any(TypeError));
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.send).not.toHaveBeenCalled();
+
+    mockGateway.clientToken = originalClientToken;
+    consoleLogSpy.mockRestore();
   });
 });
 
