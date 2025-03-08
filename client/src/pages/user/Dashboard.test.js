@@ -5,7 +5,7 @@ import { useAuth } from "../../context/auth";
 import Dashboard from "./Dashboard";
 
 jest.mock("../../context/auth", () => ({
-  useAuth: jest.fn(() => [{ token: "dummy-token" }, jest.fn()]),
+  useAuth: jest.fn(),
 }));
 
 jest.mock("../../context/cart", () => ({
@@ -18,16 +18,16 @@ jest.mock("../../context/search", () => ({
 
 jest.mock("../../hooks/useCategory", () => jest.fn(() => []));
 
-const renderDashboard = (
-  authState = {
-    user: {
-      name: "Saber",
-      email: "saber@example.com",
-      address: "123 Main St",
-    },
-  }
-) => {
-  jest.spyOn(useAuth, "mockReturnValue").mockReturnValue([authState]);
+const mockUser = {
+  user: {
+    name: "Saber",
+    email: "saber@example.com",
+    address: "123 Main St",
+  },
+};
+
+const renderDashboard = (authState) => {
+  useAuth.mockReturnValue([authState, jest.fn()]);
 
   render(
     <MemoryRouter initialEntries={["/dashboard"]}>
@@ -37,12 +37,6 @@ const renderDashboard = (
 };
 
 describe("Dashboard", () => {
-  const mockUser = {
-    name: "Saber",
-    email: "saber@example.com",
-    address: "123 Main St",
-  };
-
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -50,16 +44,24 @@ describe("Dashboard", () => {
   it("handles null auth gracefully", () => {
     renderDashboard(null);
 
-    expect(screen.queryByText(mockUser.name)).not.toBeInTheDocument();
-    expect(screen.queryByText(mockUser.email)).not.toBeInTheDocument();
-    expect(screen.queryByText(mockUser.address)).not.toBeInTheDocument();
+    expect(screen.queryByText(mockUser.user.name)).not.toBeInTheDocument();
+    expect(screen.queryByText(mockUser.user.email)).not.toBeInTheDocument();
+    expect(screen.queryByText(mockUser.user.address)).not.toBeInTheDocument();
   });
 
   it("handles undefined auth gracefully", () => {
     renderDashboard(undefined);
 
-    expect(screen.queryByText(mockUser.name)).not.toBeInTheDocument();
-    expect(screen.queryByText(mockUser.email)).not.toBeInTheDocument();
-    expect(screen.queryByText(mockUser.address)).not.toBeInTheDocument();
+    expect(screen.queryByText(mockUser.user.name)).not.toBeInTheDocument();
+    expect(screen.queryByText(mockUser.user.email)).not.toBeInTheDocument();
+    expect(screen.queryByText(mockUser.user.address)).not.toBeInTheDocument();
+  });
+
+  it("displays user information when logged in", () => {
+    renderDashboard(mockUser);
+
+    expect(screen.getAllByText(mockUser.user.name).length).toBeGreaterThan(0);
+    expect(screen.getByText(mockUser.user.email)).toBeInTheDocument();
+    expect(screen.getByText(mockUser.user.address)).toBeInTheDocument();
   });
 });
