@@ -1,15 +1,30 @@
 import { jest } from "@jest/globals";
 import categoryModel from "../models/categoryModel";
 import { mock } from "node:test";
+import mongoose from 'mongoose';
+const ObjectId = mongoose.Types.ObjectId;
 
 const productModel = jest.fn();
 const fs = {
   readFileSync: jest.fn(),
 };
 
+// Mock orderModel
+const mockOrderSave = jest.fn().mockResolvedValue(true);
+const mockOrderModel = jest.fn().mockImplementation((data) => ({
+    products: data.products,
+    payment: data.payment,
+    buyer: data.buyer,
+    save: mockOrderSave
+}));
+
 // Use unstable_mockModule as it is ESM
 jest.unstable_mockModule("../models/productModel.js", () => ({
   default: productModel,
+}));
+
+jest.unstable_mockModule("../models/orderModel.js", () => ({
+  default: mockOrderModel,
 }));
 
 jest.unstable_mockModule("fs", () => ({
@@ -45,6 +60,7 @@ let searchProductController;
 let relatedProductController;
 let productCategoryController;
 let braintreeTokenController;
+let brainTreePaymentController;
 
 let mockProducts;
 let mockCategories;
@@ -66,7 +82,8 @@ beforeAll(async () => {
   relatedProductController = productControllerModule.relatedProductController;
   productCategoryController = productControllerModule.productCategoryController;
   braintreeTokenController = productControllerModule.braintreeTokenController;
-  
+  brainTreePaymentController = productControllerModule.brainTreePaymentController;
+
   mockProducts = [{
     _id: "1", name: "Product1", slug: "product1", description: "Test product", price: 499.99, category: "C1", quantity: 10, shipping: false,
     photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
@@ -1117,5 +1134,247 @@ describe("Braintree Token Controller Test", () => {
 
     expect(mockGateway.clientToken.generate).toHaveBeenCalledWith({}, expect.any(Function));
     expect(res.send).toHaveBeenCalledWith(null);
+  });
+});
+
+describe("Braintree Payment Controller Test", () => {
+  let req, res;
+  const mockUserId = new ObjectId();
+  const mockProductIds = [new ObjectId(), new ObjectId(), new ObjectId()];
+
+  const mockCart = [
+    { _id: mockProductIds[0], price: 100 },
+    { _id: mockProductIds[1], price: 200 },
+    { _id: mockProductIds[2], price: 300 },
+  ];
+  const mockNonce = "mock-payment-nonce";
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    req = {
+      body: {
+        nonce: mockNonce,
+        cart: mockCart,
+      },
+      user: { _id: mockUserId },
+    };
+    res = {
+      status: jest.fn().mockReturnThis(),
+      send: jest.fn(),
+      json: jest.fn(),
+    };
+
+    mockGateway.transaction = {
+      sale: jest.fn(),
+    };
+    mockOrderModel.mockClear();
+    mockOrderSave.mockClear();
+  });
+
+  test("should process payment and create order successfully", async () => {
+    const mockResult = {
+      success: true,
+      transaction: { id: "tx123" },
+    };
+
+    mockGateway.transaction.sale.mockImplementation((options, callback) => {
+      callback(null, mockResult);
+    });
+
+    await brainTreePaymentController(req, res);
+
+    expect(mockGateway.transaction.sale).toHaveBeenCalledWith(
+      {
+        amount: 600,
+        paymentMethodNonce: mockNonce,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      expect.any(Function)
+    );
+
+    expect(mockOrderModel).toHaveBeenCalledWith({
+      products: mockCart,
+      payment: mockResult,
+      buyer: mockUserId,
+    });
+
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
+  });
+
+  test("should handle payment failure", async () => {
+    const mockError = new Error("Payment failed");
+
+    mockGateway.transaction.sale.mockImplementation((options, callback) => {
+      callback(mockError, null);
+    });
+
+    await brainTreePaymentController(req, res);
+
+    expect(mockGateway.transaction.sale).toHaveBeenCalled();
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith(mockError);
+  });
+
+  test("should calculate total price correctly for empty cart", async () => {
+    req.body.cart = [];
+    const mockResult = { success: true };
+
+    mockGateway.transaction.sale.mockImplementation((options, callback) => {
+      callback(null, mockResult);
+    });
+
+    await brainTreePaymentController(req, res);
+
+    expect(mockGateway.transaction.sale).toHaveBeenCalledWith(
+      {
+        amount: 0,
+        paymentMethodNonce: mockNonce,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      expect.any(Function)
+    );
+  });
+
+  test("should handle missing cart in request", async () => {
+    const originalReq = {
+      body: {
+        nonce: "mock-payment-nonce",
+        cart: undefined,
+      },
+      user: { _id: mockUserId },
+    };
+
+    await brainTreePaymentController(originalReq, res);
+
+    // Current implementation will throw error when trying to map undefined cart but only console.log it
+    expect(mockGateway.transaction.sale).not.toHaveBeenCalled();
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.send).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+  });
+
+  test("should handle missing nonce in request", async () => {
+    const reqWithoutNonce = {
+      body: {
+        cart: mockCart,
+      },
+      user: { _id: mockUserId },
+    };
+
+    await brainTreePaymentController(reqWithoutNonce, res);
+
+    expect(mockGateway.transaction.sale).toHaveBeenCalledWith(
+      {
+        amount: 600,
+        paymentMethodNonce: undefined,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      expect.any(Function)
+    );
+    expect(res.status).not.toHaveBeenCalled();
+    expect(res.send).not.toHaveBeenCalled();
+  });
+
+  test("should handle empty string nonce", async () => {
+    const reqWithEmptyNonce = {
+      body: {
+        nonce: "",
+        cart: mockCart
+      },
+      user: { _id: mockUserId }
+    };
+
+    mockGateway.transaction.sale.mockImplementation((options, callback) => {
+      callback(new Error("Invalid payment method nonce"), null);
+    });
+
+    await brainTreePaymentController(reqWithEmptyNonce, res);
+
+    expect(mockGateway.transaction.sale).toHaveBeenCalledWith(
+      {
+        amount: 600,
+        paymentMethodNonce: "",
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      expect.any(Function)
+    );
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.send).toHaveBeenCalledWith(expect.any(Error));
+  });
+
+  test("should handle missing user in request", async () => {
+    const reqWithoutUser = {
+      body: {
+        nonce: mockNonce,
+        cart: mockCart
+      }
+      // missing user
+    };
+
+    await brainTreePaymentController(reqWithoutUser, res);
+
+    expect(mockGateway.transaction.sale).toHaveBeenCalledWith(
+      {
+        amount: 600,
+        paymentMethodNonce: mockNonce,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      expect.any(Function)
+    );
+    expect(mockOrderModel).not.toHaveBeenCalled();
+    expect(res.json).not.toHaveBeenCalled();
+  });
+
+  test("should handle cart with zero price items", async () => {
+    const zeroPriceCart = [
+      { _id: mockProductIds[0], price: 0 }
+    ];
+
+    const reqWithZeroPriceCart = {
+      body: {
+        nonce: mockNonce,
+        cart: zeroPriceCart
+      },
+      user: { _id: mockUserId }
+    };
+
+    const mockResult = {
+      success: true,
+      transaction: { id: "tx123" },
+    };
+
+    mockGateway.transaction.sale.mockImplementation((options, callback) => {
+      callback(null, mockResult);
+    });
+
+    await brainTreePaymentController(reqWithZeroPriceCart, res);
+
+    expect(mockGateway.transaction.sale).toHaveBeenCalledWith(
+      {
+        amount: 0,
+        paymentMethodNonce: mockNonce,
+        options: {
+          submitForSettlement: true,
+        },
+      },
+      expect.any(Function)
+    );
+    expect(mockOrderModel).toHaveBeenCalledWith({
+      products: zeroPriceCart,
+      payment: mockResult,
+      buyer: mockUserId,
+    });
+    expect(res.json).toHaveBeenCalledWith({ ok: true });
   });
 });
