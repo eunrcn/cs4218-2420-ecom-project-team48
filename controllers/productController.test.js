@@ -809,7 +809,7 @@ describe("Product List Controller Test", () => {
   });
 
   test("should return the list of products successfully", async () => {
-    const page = req.params.page ? req.params.page : 1;
+    const page = req.params.page;
     const mockQuery = {
       select: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
@@ -827,6 +827,33 @@ describe("Product List Controller Test", () => {
     expect(mockQuery.limit).toHaveBeenCalledWith(perPage);
     expect(mockQuery.sort).toHaveBeenCalledWith({ createdAt: -1 });
 
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.send).toHaveBeenCalledWith({
+      success: true,
+      products: mockProducts,
+    });
+  });
+
+  test("should default to 1 if no page is specified", async () => {
+    req.params = {};
+    const page = 1;
+    const mockQuery = {
+      select: jest.fn().mockReturnThis(),
+      skip: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      sort: jest.fn().mockResolvedValue(mockProducts),
+    };
+
+    productModel.find = jest.fn().mockReturnValue(mockQuery);
+
+    await productListController(req, res);
+
+    expect(productModel.find).toHaveBeenCalledWith({});
+    expect(mockQuery.select).toHaveBeenCalledWith("-photo");
+    expect(mockQuery.skip).toHaveBeenCalledWith((page - 1) * perPage);
+    expect(mockQuery.limit).toHaveBeenCalledWith(perPage);
+    expect(mockQuery.sort).toHaveBeenCalledWith({ createdAt: -1 });
 
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.send).toHaveBeenCalledWith({
