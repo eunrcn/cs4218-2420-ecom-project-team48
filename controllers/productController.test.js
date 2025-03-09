@@ -138,7 +138,7 @@ describe("createProductController", () => {
         photo: {
           path: "test/path/photo.jpg",
           type: "image/jpeg",
-          size: 500000, // 500KB
+          size: 1000000, // 1MB
         },
       },
     };
@@ -212,7 +212,7 @@ describe("createProductController", () => {
   });
 
   test("should return error when photo size exceeds 1MB", async () => {
-    mockReq.files.photo.size = 1500000; // 1.5MB
+    mockReq.files.photo.size = 1000001;
 
     await createProductController(mockReq, mockRes);
 
