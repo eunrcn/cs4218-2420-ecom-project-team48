@@ -54,7 +54,7 @@ describe("UpdateProduct Component", () => {
     quantity: 10,
     shipping: true,
     category: { _id: "1", name: "Electronics" },
-    photo: "existing-photo.jpg"
+    photo: "existing-photo.jpg",
   };
 
   const mockCategories = [
@@ -68,7 +68,9 @@ describe("UpdateProduct Component", () => {
       if (url.includes("get-product")) {
         return Promise.resolve({ data: { product: mockProduct } });
       }
-      return Promise.resolve({ data: { success: true, category: mockCategories } });
+      return Promise.resolve({
+        data: { success: true, category: mockCategories },
+      });
     });
     axios.put.mockResolvedValue({ data: { success: true } });
     axios.delete.mockResolvedValue({ data: { success: true } });
@@ -104,9 +106,15 @@ describe("UpdateProduct Component", () => {
 
     await waitFor(() => {
       expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
-      expect(screen.getByDisplayValue(mockProduct.description)).toBeInTheDocument();
-      expect(screen.getByDisplayValue(mockProduct.price.toString())).toBeInTheDocument();
-      expect(screen.getByDisplayValue(mockProduct.quantity.toString())).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue(mockProduct.description)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue(mockProduct.price.toString())
+      ).toBeInTheDocument();
+      expect(
+        screen.getByDisplayValue(mockProduct.quantity.toString())
+      ).toBeInTheDocument();
       expect(screen.getByText("Electronics")).toBeInTheDocument();
       expect(screen.getByText("Yes")).toBeInTheDocument();
       expect(screen.getByAltText("product_photo")).toHaveAttribute(
@@ -122,11 +130,11 @@ describe("UpdateProduct Component", () => {
     await waitFor(() => screen.getByText("Update Product"));
 
     fireEvent.change(screen.getByPlaceholderText("write a name"), {
-      target: { value: "New Shirt" }
+      target: { value: "New Shirt" },
     });
 
     fireEvent.change(screen.getByPlaceholderText("write a description"), {
-        target: { value: "A cool shirt" }
+      target: { value: "A cool shirt" },
     });
 
     fireEvent.click(screen.getByText("UPDATE PRODUCT"));
@@ -134,10 +142,12 @@ describe("UpdateProduct Component", () => {
     await waitFor(() => {
       const formData = axios.put.mock.calls[0][1];
       const formEntries = Object.fromEntries(formData.entries());
-      
+
       expect(formEntries.name).toBe("New Shirt");
       expect(formEntries.description).toBe("A cool shirt");
-      expect(toast.success).toHaveBeenCalledWith("Product Updated Successfully");
+      expect(toast.success).toHaveBeenCalledWith(
+        "Product Updated Successfully"
+      );
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
     });
   });
@@ -148,17 +158,17 @@ describe("UpdateProduct Component", () => {
     await waitFor(() => screen.getByText("Update Product"));
 
     fireEvent.change(screen.getByPlaceholderText("write a name"), {
-        target: { value: "New Shirt" }
+      target: { value: "New Shirt" },
     });
 
     // category from electronics to clothing
     fireEvent.change(screen.getAllByTestId("antd-select")[0], {
-      target: { value: "3" }
+      target: { value: "3" },
     });
 
     // // shipping from true to false
     fireEvent.change(screen.getAllByTestId("antd-select")[1], {
-        target: { value: "0" }
+      target: { value: "0" },
     });
 
     fireEvent.click(screen.getByText("UPDATE PRODUCT"));
@@ -166,11 +176,13 @@ describe("UpdateProduct Component", () => {
     await waitFor(() => {
       const formData = axios.put.mock.calls[0][1];
       const formEntries = Object.fromEntries(formData.entries());
-      
+
       expect(formEntries.category).toBe("3");
       expect(formEntries.shipping).toBe("0");
 
-      expect(toast.success).toHaveBeenCalledWith("Product Updated Successfully");
+      expect(toast.success).toHaveBeenCalledWith(
+        "Product Updated Successfully"
+      );
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
     });
   });
@@ -179,10 +191,10 @@ describe("UpdateProduct Component", () => {
     renderComponent();
 
     await waitFor(() => screen.getByText("Update Product"));
-    
+
     const file = new File(["test"], "new-photo.png", { type: "image/png" });
     fireEvent.change(screen.getByLabelText("Upload Photo"), {
-      target: { files: [file] }
+      target: { files: [file] },
     });
 
     fireEvent.click(screen.getByText("UPDATE PRODUCT"));
@@ -190,25 +202,23 @@ describe("UpdateProduct Component", () => {
     await waitFor(() => {
       const formData = axios.put.mock.calls[0][1];
       const formEntries = Object.fromEntries(formData.entries());
-      
+
       expect(formEntries.photo).toBeInstanceOf(File);
-      expect(toast.success).toHaveBeenCalledWith("Product Updated Successfully");
+      expect(toast.success).toHaveBeenCalledWith(
+        "Product Updated Successfully"
+      );
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
     });
   });
 
-  test("updates product with price and quantity", async () => {
+  test("updates product with price", async () => {
     renderComponent();
 
     await waitFor(() => screen.getByText("Update Product"));
-    
-    fireEvent.change(screen.getByPlaceholderText("write a price"), {
-        target: { value: "25.99" }
-    });
 
-    fireEvent.change(screen.getByPlaceholderText("write a quantity"), {
-        target: { value: "10" }
-    });
+    const priceInput = screen.getByPlaceholderText("write a price");
+
+    fireEvent.change(priceInput, { target: { value: "25.99" } });
 
     fireEvent.click(screen.getByText("UPDATE PRODUCT"));
 
@@ -217,9 +227,54 @@ describe("UpdateProduct Component", () => {
       const formEntries = Object.fromEntries(formData.entries());
 
       expect(formEntries.price).toBe("25.99");
-      expect(formEntries.quantity).toBe("10");
-      expect(toast.success).toHaveBeenCalledWith("Product Updated Successfully");
+      expect(toast.success).toHaveBeenCalledWith(
+        "Product Updated Successfully"
+      );
       expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
+    });
+  });
+
+  test("updates product with quantity", async () => {
+    renderComponent();
+
+    await waitFor(() => screen.getByText("Update Product"));
+
+    const quantityInput = screen.getByPlaceholderText("write a quantity");
+
+    fireEvent.change(quantityInput, { target: { value: "10" } });
+
+    fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+    await waitFor(() => {
+      const formData = axios.put.mock.calls[0][1];
+      const formEntries = Object.fromEntries(formData.entries());
+
+      expect(formEntries.quantity).toBe("10");
+      expect(toast.success).toHaveBeenCalledWith(
+        "Product Updated Successfully"
+      );
+      expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
+    });
+  });
+
+  test("shows error message when update operation API fails", async () => {
+    renderComponent();
+
+    axios.put.mockRejectedValue(new Error("Update product error"));
+
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText("UPDATE PRODUCT"));
+
+    await waitFor(() => {
+      expect(axios.put).toHaveBeenCalledWith(
+        `/api/v1/product/update-product/${mockProduct._id}`,
+        expect.any(FormData)
+      );
+
+      expect(toast.error).toHaveBeenCalledWith("Something went wrong");
     });
   });
 
@@ -227,13 +282,13 @@ describe("UpdateProduct Component", () => {
     renderComponent();
 
     axios.put = jest.fn().mockResolvedValue({
-        data: { success: false, message: "Failed to update product" },
+      data: { success: false, message: "Failed to update product" },
     });
 
     await waitFor(() => {
-        expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
+      expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
     });
-    
+
     fireEvent.click(screen.getByText("UPDATE PRODUCT"));
 
     await waitFor(() => {
@@ -246,17 +301,19 @@ describe("UpdateProduct Component", () => {
     renderComponent();
 
     await waitFor(() => {
-        expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
+      expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
     });
-    
+
     fireEvent.click(screen.getByText("DELETE PRODUCT"));
-    
+
     await waitFor(() => {
-        expect(axios.delete).toHaveBeenCalledWith(
-            `/api/v1/product/delete-product/${mockProduct._id}`
-        );
-        expect(toast.success).toHaveBeenCalledWith("Product deleted successfully");
-        expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
+      expect(axios.delete).toHaveBeenCalledWith(
+        `/api/v1/product/delete-product/${mockProduct._id}`
+      );
+      expect(toast.success).toHaveBeenCalledWith(
+        "Product deleted successfully"
+      );
+      expect(mockNavigate).toHaveBeenCalledWith("/dashboard/admin/products");
     });
   });
 
@@ -265,7 +322,7 @@ describe("UpdateProduct Component", () => {
     renderComponent();
 
     await waitFor(() => {
-        expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
+      expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByText("DELETE PRODUCT"));
@@ -282,46 +339,58 @@ describe("UpdateProduct Component", () => {
     axios.delete.mockRejectedValue(new Error("Delete product error"));
 
     await waitFor(() => {
-        expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
+      expect(screen.getByDisplayValue(mockProduct.name)).toBeInTheDocument();
     });
 
     fireEvent.click(screen.getByText("DELETE PRODUCT"));
 
     await waitFor(() => {
-        expect(axios.delete).toHaveBeenCalledWith(
-            `/api/v1/product/delete-product/${mockProduct._id}`
-        );
-        expect(toast.error).toHaveBeenCalledWith("Something went wrong");
+      expect(axios.delete).toHaveBeenCalledWith(
+        `/api/v1/product/delete-product/${mockProduct._id}`
+      );
+      expect(toast.error).toHaveBeenCalledWith("Something went wrong");
     });
   });
 
   test("successfully fetches and displays categories", async () => {
     renderComponent();
-  
+
     await waitFor(() => {
       expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
-      
+
       expect(screen.getByText("Electronics")).toBeInTheDocument();
       expect(screen.getByText("Books")).toBeInTheDocument();
       expect(screen.getByText("Clothing")).toBeInTheDocument();
 
-      
       expect(toast.error).not.toHaveBeenCalled();
     });
   });
 
-  test("handles category fetch failure", async () => {
-    axios.get.mockRejectedValue(new Error("Network Error"));
-    
+  test("displays error toast when category fetch API returns a failed response", async () => {
+    axios.get.mockResolvedValue({
+      data: { success: false, message: "Failed to get category" },
+    });
+
     renderComponent();
-  
+
     await waitFor(() => {
-      expect(toast.error).toHaveBeenCalledWith(
-        "Something went wrong in getting category"
-      );
-      
+      expect(toast.error).toHaveBeenCalledWith("Failed to get category");
+
       expect(screen.queryByText("Electronics")).not.toBeInTheDocument();
     });
   });
 
+  test("displays error toast when category fetch API fails", async () => {
+    axios.get.mockRejectedValue(new Error("Network Error"));
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(toast.error).toHaveBeenCalledWith(
+        "Something went wrong in getting category"
+      );
+
+      expect(screen.queryByText("Electronics")).not.toBeInTheDocument();
+    });
+  });
 });
