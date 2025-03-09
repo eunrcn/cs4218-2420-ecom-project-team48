@@ -25,29 +25,26 @@ jest.mock("react-router-dom", () => ({
 
 jest.mock("antd", () => {
   const antd = jest.requireActual("antd");
-  const Select = ({ children, onChange, placeholder, showSearch, ...rest }) => (
+
+  const Select = ({ children, onChange, showSearch, ...rest }) => (
     <div>
       <select
         role="test-selection"
         onChange={(e) => onChange(e.target.value)}
         {...rest}
       >
-        <option value="" disabled>
-          {placeholder}
-        </option>
         {children}
       </select>
     </div>
   );
-  Select.Option = ({ children, ...rest }) => (
-    <option role="test-option" {...rest}>
+
+  Select.Option = ({ children, value, ...rest }) => (
+    <option role="test-option" value={value} {...rest}>
       {children}
     </option>
   );
-  return {
-    ...antd,
-    Select,
-  };
+
+  return { ...antd, Select };
 });
 
 global.URL.createObjectURL = jest.fn(() => "blob:mocked-url");
@@ -88,10 +85,10 @@ describe("CreateProduct Component", () => {
 
   test("successfully fetches and displays categories", async () => {
     renderComponent();
-  
+
     await waitFor(() => {
       expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
-      
+
       expect(screen.getByText("Electronics")).toBeInTheDocument();
       expect(screen.getByText("Books")).toBeInTheDocument();
 
@@ -99,7 +96,20 @@ describe("CreateProduct Component", () => {
     });
   });
 
-  test("displays error toast when fetching categories fails", async () => {
+  test("displays error toast category fetching API returns a failed response", async () => {
+    axios.get.mockResolvedValue({
+      data: { success: false, message: "Failed to get category" },
+    });
+
+    renderComponent();
+
+    await waitFor(() => {
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
+      expect(toast.error).toHaveBeenCalledWith("Failed to get category");
+    });
+  });
+
+  test("displays error toast when fetching categories API fails", async () => {
     axios.get.mockRejectedValue(new Error("API Error"));
     renderComponent();
 
@@ -119,7 +129,9 @@ describe("CreateProduct Component", () => {
         screen.getByRole("heading", { name: /Create Product/i })
       ).toBeInTheDocument();
 
-      expect(screen.getByText(/Select a category/i)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/select a category/i)
+      ).toBeInTheDocument();
       expect(screen.getByText("Electronics")).toBeInTheDocument();
       expect(screen.getByText("Books")).toBeInTheDocument();
 
@@ -136,7 +148,9 @@ describe("CreateProduct Component", () => {
         screen.getByPlaceholderText(/write a quantity/i)
       ).toBeInTheDocument();
 
-      expect(screen.getByText(/Select Shipping/i)).toBeInTheDocument();
+      expect(
+        screen.getByPlaceholderText(/select shipping/i)
+      ).toBeInTheDocument();
       expect(screen.getByText("No")).toBeInTheDocument();
       expect(screen.getByText("Yes")).toBeInTheDocument();
 
@@ -146,7 +160,44 @@ describe("CreateProduct Component", () => {
     });
   });
 
-  test("submits form with valid data", async () => {
+  test("updates category state on category dropdown selection", async () => {
+    renderComponent();
+
+    await waitFor(() => {
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
+      expect(screen.getByText("Electronics")).toBeInTheDocument();
+      expect(screen.getByText("Books")).toBeInTheDocument();
+    });
+
+    // get all dropdowns and select the first one (category dropdown)
+    const dropdowns = screen.getAllByRole("test-selection");
+    const categoryDropdown = dropdowns[0];
+
+    fireEvent.change(categoryDropdown, { target: { value: "1" } });
+
+    await waitFor(() => {
+      expect(categoryDropdown).toHaveValue("1");
+    });
+  });
+
+  test("updates shipping state on shipping dropdown selection", async () => {
+    renderComponent();
+
+    await waitFor(() => {
+      expect(axios.get).toHaveBeenCalledWith("/api/v1/category/get-category");
+    });
+
+    const dropdowns = screen.getAllByRole("test-selection");
+    const shippingDropdown = dropdowns[1]; // 1st is category, 2nd is shipping
+
+    fireEvent.change(shippingDropdown, { target: { value: "1" } });
+
+    await waitFor(() => {
+      expect(shippingDropdown).toHaveValue("1");
+    });
+  });
+
+  test("creates product when submitting form with valid data", async () => {
     renderComponent();
 
     fireEvent.change(screen.getByPlaceholderText("write a name"), {
@@ -206,6 +257,56 @@ describe("CreateProduct Component", () => {
     });
   });
 
+  test("handles error when creating product returns a failed response", async () => {
+    const mockErrorMessage = "Error creating product";
+    axios.post.mockResolvedValue({
+      data: { success: false, message: mockErrorMessage },
+    });
+
+    renderComponent();
+
+    fireEvent.change(screen.getByPlaceholderText("write a name"), {
+      target: { value: "Wireless Headphones" },
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("write a description"), {
+      target: {
+        value: "High-quality wireless headphones with noise cancellation.",
+      },
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("write a price"), {
+      target: { value: "100" },
+    });
+
+    fireEvent.change(screen.getByPlaceholderText("write a quantity"), {
+      target: { value: "10" },
+    });
+
+    fireEvent.mouseDown(screen.getAllByRole("test-selection")[0]);
+    const electronicsOption = await screen.findByText("Electronics");
+    fireEvent.click(electronicsOption);
+
+    fireEvent.mouseDown(screen.getAllByRole("test-selection")[1]);
+    const yesOption = await screen.findByText("Yes");
+    fireEvent.click(yesOption);
+
+    const file = new File(["test"], "test.png", { type: "image/png" });
+    fireEvent.change(screen.getByLabelText("Upload Photo"), {
+      target: { files: [file] },
+    });
+
+    fireEvent.click(screen.getByText("CREATE PRODUCT"));
+
+    await waitFor(() => {
+      expect(axios.post).toHaveBeenCalledWith(
+        "/api/v1/product/create-product",
+        expect.any(FormData)
+      ); // Check that toast.error was called with the correct message
+      expect(toast.error).toHaveBeenCalledWith(mockErrorMessage);
+    });
+  });
+
   test("displays error toast when API call fails", async () => {
     axios.post.mockRejectedValue(new Error("API Error"));
     renderComponent();
@@ -251,27 +352,27 @@ describe("CreateProduct Component", () => {
 
   test("handles no photo selected", async () => {
     renderComponent();
-  
+
     fireEvent.change(screen.getByPlaceholderText("write a name"), {
       target: { value: "Wireless Headphones" },
     });
-  
+
     fireEvent.change(screen.getByPlaceholderText("write a description"), {
       target: {
         value: "High-quality wireless headphones with noise cancellation.",
       },
     });
-  
+
     fireEvent.change(screen.getByPlaceholderText("write a price"), {
       target: { value: "100" },
     });
-  
+
     fireEvent.change(screen.getByPlaceholderText("write a quantity"), {
       target: { value: "10" },
     });
-    
+
     fireEvent.click(screen.getByText("CREATE PRODUCT"));
-  
+
     await waitFor(() => {
       expect(toast.error).toHaveBeenCalledWith(
         "Please check all fields including photo"
