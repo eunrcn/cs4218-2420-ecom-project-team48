@@ -3,20 +3,25 @@ MS1 CI link: https://github.com/cs4218/cs4218-2420-ecom-project-team48/actions
 ## Instructions
 
 1. Clone the repository:
-   ```
+   ```sh
    git clone https://github.com/cs4218/cs4218-2420-ecom-project-team48.git
-   cd cs4218-2420-ecom-project-team48
    ```
 
 2. Install dependencies:
-   ```
+   ```sh
+   cd cs4218-2420-ecom-project-team48
+   npm install
+   cd client
    npm install
    ```
 
-3. Run tests:
-   ```
+3. Run all tests:
+   ```sh
+   cd ..  # if not at project root
    npm run test
    ```
+
+   Or you can `npm run test:frontend` or `npm run test:backend` to test only frontend or backend respectively.
 
 ### Running Virtual Vault
 
