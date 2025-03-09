@@ -1,11 +1,10 @@
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import HomePage from "../pages/HomePage";
 import { useCart } from "../context/cart";
 import axios from "axios";
 import { MemoryRouter, useNavigate, BrowserRouter } from "react-router-dom";
 import { Prices } from "../components/Prices";
-
 
 // Mock axios
 jest.mock("axios");
@@ -42,14 +41,6 @@ describe("HomePage Component", () => {
     const mockCatergory = [{ _id: "1", name: "Electronics" }];
     const mockError = new Error("Mock Error");
 
-    const renderComponent = () => {
-        render(
-            <BrowserRouter>
-                <HomePage />
-            </BrowserRouter>
-        );
-    };
-
     beforeAll(() => {
         Object.defineProperty(window, "matchMedia", {
             writable: true,
@@ -57,8 +48,8 @@ describe("HomePage Component", () => {
                 matches: false,
                 media: query,
                 onchange: null,
-                addListener: jest.fn(), 
-                removeListener: jest.fn(), 
+                addListener: jest.fn(),
+                removeListener: jest.fn(),
                 addEventListener: jest.fn(),
                 removeEventListener: jest.fn(),
                 dispatchEvent: jest.fn(),
@@ -87,8 +78,13 @@ describe("HomePage Component", () => {
 
         useCart.mockReturnValue([[], jest.fn()]);
 
-        renderComponent();
-
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
         expect(screen.getByText("Filter By Category")).toBeInTheDocument();
         expect(await screen.findByText("Electronics", { selector: ".filters span" })).toBeInTheDocument();
 
@@ -112,8 +108,13 @@ describe("HomePage Component", () => {
 
         useCart.mockReturnValue([[], jest.fn()]);
 
-        renderComponent();
-
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
         const checkbox = await screen.findByRole("checkbox", { name: /Electronics/i });
         fireEvent.click(checkbox);
 
@@ -125,11 +126,8 @@ describe("HomePage Component", () => {
         });
 
         expect(await screen.findByText("Laptop")).toBeInTheDocument();
-        //Continue this check here.
 
         fireEvent.click(checkbox);
-
-
     });
 
     it("should add product to cart", async () => {
@@ -144,8 +142,13 @@ describe("HomePage Component", () => {
 
         useCart.mockReturnValue([[], jest.fn()]);
 
-        renderComponent();
-
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
         Storage.prototype.setItem = jest.fn();
         const addToCartButton = await screen.findByText("ADD TO CART");
         fireEvent.click(addToCartButton);
@@ -165,7 +168,13 @@ describe("HomePage Component", () => {
             return Promise.resolve({ data: { success: true } });
         });
 
-        renderComponent();
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
         await waitFor(() => expect(logSpy).toHaveBeenCalledWith(mockError));
         logSpy.mockRestore();
     });
@@ -180,8 +189,13 @@ describe("HomePage Component", () => {
             return Promise.resolve({ data: { success: true, category: [] } });
         });
 
-        renderComponent();
-
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
         await waitFor(() => expect(logSpy).toHaveBeenCalledWith(mockError));
         logSpy.mockRestore();
     });
@@ -193,32 +207,42 @@ describe("HomePage Component", () => {
             return Promise.reject(mockError);
         });
 
-        renderComponent();
-
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
         await waitFor(() => expect(logSpy).toHaveBeenCalledWith(mockError));
         logSpy.mockRestore();
     });
 
-    it("should reload the page when the reset button is clicked", () => {
+    it("should reload the page when the reset button is clicked", async () => {
         const window_location = window.location
         delete window.location;
         window.location = { reload: jest.fn() };
-
-        render(
-            <MemoryRouter>
-                <HomePage />
-            </MemoryRouter>
-        );
-
+        await act(async () => {
+            render(
+                <MemoryRouter>
+                    <HomePage />
+                </MemoryRouter>
+            );
+        });
         const resetButton = screen.getByText(/RESET FILTERS/i);
         fireEvent.click(resetButton);
         expect(window.location.reload).toHaveBeenCalled();
         window.location = window_location;
     });
 
-    it("should render radio buttons and updates selection on click", () => {
-        renderComponent();
-
+    it("should render radio buttons and updates selection on click", async () => {
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
         Prices.forEach((price) => {
             expect(screen.getByLabelText(price.name)).toBeInTheDocument();
         });
@@ -230,7 +254,40 @@ describe("HomePage Component", () => {
         expect(selectedRadio).toBeChecked();
         expect(otherRadio).not.toBeChecked();
     });
-    
+
+    it("navigates to the correct product page on button click", async () => {
+        const navigateMock = jest.fn();
+        useNavigate.mockReturnValue(navigateMock);
+
+        axios.get.mockImplementation((url) => {
+            if (url === "/api/v1/category/get-category") {
+                return Promise.resolve({ data: { success: true, category: mockCatergory } });
+            }
+            if (url.startsWith("/api/v1/product/product-list")) {
+                return Promise.resolve({ data: { products: mockProducts } });
+            }
+            if (url === "/api/v1/product/product-count") {
+                return Promise.resolve({ data: { total: 1 } });
+            }
+            return Promise.resolve({ data: {} });
+        });
+
+        useCart.mockReturnValue([[], jest.fn()]);
+
+        await act(async () => {
+            render(
+                <BrowserRouter>
+                    <HomePage />
+                </BrowserRouter>
+            );
+        });
+
+        const detailsButton = screen.getByText(/More Details/i);
+        expect(detailsButton).toBeInTheDocument();
+
+        fireEvent.click(detailsButton);
+        expect(navigateMock).toHaveBeenCalledWith(`/product/${mockProducts[0].slug}`);
+    });
 
 });
 
