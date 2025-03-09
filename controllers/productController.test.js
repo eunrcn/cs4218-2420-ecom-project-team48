@@ -687,7 +687,7 @@ describe("Product Filter Controller Test", () => {
   test("should filter products based on price range successfully", async () => {
     req.body.radio = [500, 1000];
 
-    //Product 2 and 3
+    // Product 2 and 3
     productModel.find = jest.fn().mockResolvedValue([mockProducts[1], mockProducts[2]]);
 
     await productFiltersController(req, res);

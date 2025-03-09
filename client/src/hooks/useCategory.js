@@ -4,7 +4,7 @@ import axios from "axios";
 export default function useCategory() {
   const [categories, setCategories] = useState([]);
 
-  //get cat
+  //get categories
   const getCategories = async () => {
     try {
       const { data } = await axios.get("/api/v1/category/get-category");
