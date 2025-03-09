@@ -94,7 +94,7 @@ const HomePage = () => {
     if (checked.length || radio.length) filterProduct();
   }, [checked, radio]);
 
-  //get filterd product
+  //get filtered product
   const filterProduct = async () => {
     try {
       const { data } = await axios.post("/api/v1/product/product-filters", {
@@ -152,7 +152,7 @@ const HomePage = () => {
         <div className="col-md-9 ">
           <h1 className="text-center">All Products</h1>
           <div className="d-flex flex-wrap">
-            {products?.map((p) => (
+            {products?.map((p) => ( 
               <div className="card m-2" key={p._id}>
                 <img
                   src={`/api/v1/product/product-photo/${p._id}`}

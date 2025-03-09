@@ -23,10 +23,13 @@ describe("User Model Test", () => {
     });
 
 
-
     afterAll(async () => {
         await mongoose.disconnect();
         await mongoServer.stop();
+    });
+
+    beforeEach(async () => {
+        await User.deleteMany({});
     });
 
     test("should create a user successfully", async () => {
@@ -45,6 +48,45 @@ describe("User Model Test", () => {
         expect(createdUser.updatedAt).toBeDefined();
     });
 
+    test("should retrieve a user successfully", async () => {
+        const createdUser = await User.create(mockUserData);
+    
+        const retrievedUser = await User.findById(createdUser._id);
+    
+        expect(retrievedUser).not.toBeNull();    
+        expect(retrievedUser._id.toString()).toBe(createdUser._id.toString());
+        expect(retrievedUser.name).toBe(createdUser.name);
+        expect(retrievedUser.email).toBe(createdUser.email);
+        expect(retrievedUser.phone).toBe(createdUser.phone);
+        expect(retrievedUser.address).toEqual(createdUser.address);
+    });
+
+    test("should update a user successfully", async () => {
+        const createdUser = await User(mockUserData).save();
+
+        createdUser.name = "Updated Name";
+        createdUser.email = "update@update.com";
+
+        const updatedUser = await createdUser.save();
+
+        expect(updatedUser._id.toString()).toBe(createdUser._id.toString());
+        expect(updatedUser.name).toBe("Updated Name");
+        expect(updatedUser.email).toBe("update@update.com");
+    });
+    
+
+    test("should delete a user successfully", async () => {
+        const createdUser = await User.create(mockUserData);
+        const deletedUser = await User.findByIdAndDelete(createdUser._id);
+    
+        expect(deletedUser).not.toBeNull();
+        expect(deletedUser._id.toString()).toBe(createdUser._id.toString());
+    
+        const userAfterDeletion = await User.findById(createdUser._id);
+        expect(userAfterDeletion).toBeNull();
+    });
+    
+    
 
     test.each([
         { field: "name" },

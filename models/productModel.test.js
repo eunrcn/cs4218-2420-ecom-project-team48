@@ -26,6 +26,10 @@ describe("Product Model Test", () => {
         };
     });
 
+    beforeEach(async () => {
+        await Product.deleteMany({});
+    });
+
     afterAll(async () => {
         await mongoose.disconnect();
         await mongoServer.stop();
@@ -48,6 +52,47 @@ describe("Product Model Test", () => {
         expect(createdProduct.shipping).toBe(mockProductData.shipping);
         expect(createdProduct.createdAt).toBeDefined();
         expect(createdProduct.updatedAt).toBeDefined();
+    });
+
+    test("should retreive a product successfully", async () => {
+        const createdProduct = await Product.create(mockProductData);
+    
+        const foundProduct = await Product.findById(createdProduct._id);
+    
+        expect(foundProduct).not.toBeNull();
+        expect(foundProduct._id.toString()).toBe(createdProduct._id.toString());
+        expect(foundProduct.name).toBe(mockProductData.name);
+        expect(foundProduct.price).toBe(mockProductData.price);
+    });
+
+    test("should update a product successfully", async () => {
+
+        const createdProduct = await Product(mockProductData).save();
+    
+        createdProduct.name = "Updated Name";
+        createdProduct.price = 111;
+        createdProduct.description = "Updated Description";
+
+        const updatedProduct = await createdProduct.save();
+
+        expect(updatedProduct).not.toBeNull();
+        expect(updatedProduct._id.toString()).toBe(createdProduct._id.toString());
+        expect(updatedProduct.name).toBe("Updated Name");
+        expect(updatedProduct.price).toBe(111);
+        expect(updatedProduct.description).toBe("Updated Description");
+    });
+
+
+
+    test("should delete a product successfully", async () => {
+        const createdProduct = await Product.create(mockProductData);
+        const deletedProduct = await Product.findByIdAndDelete(createdProduct._id);
+    
+        expect(deletedProduct).not.toBeNull();
+        expect(deletedProduct._id.toString()).toBe(createdProduct._id.toString());
+    
+        const productAfterDeletion = await Product.findById(createdProduct._id);
+        expect(productAfterDeletion).toBeNull();
     });
 
     test.each([
