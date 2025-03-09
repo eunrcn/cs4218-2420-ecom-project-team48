@@ -13,9 +13,6 @@ const Users = () => {
     try {
       const { data } = await axios.get("/api/v1/user/get-users");
       setUsers(data.users);
-      console.log(users);
-      console.log(data);
-      console.log(data.users);
     } catch (error) {
       console.log(error);
       toast.error("Something Went Wrong");
