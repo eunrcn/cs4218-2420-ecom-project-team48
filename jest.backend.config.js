@@ -12,7 +12,8 @@ export default {
     "<rootDir>/models/*.test.js",
     "<rootDir>/config/*.test.js",
     "<rootDir>/routes/*.test.js",
-    "<rootDir>/helpers/*.test.js"
+    "<rootDir>/helpers/*.test.js",
+    "<rootDir>/tests/integration/*.test.js"
   ],
 
   // setup files that run before Jest is loaded

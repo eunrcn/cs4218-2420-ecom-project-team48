@@ -36,6 +36,7 @@
     "nodemon": "^3.0.3",
     "react-icons": "^5.0.1",
     "slugify": "^1.6.6",
+    "supertest": "^7.0.0",
     "util": "^0.12.5",
     "whatwg-fetch": "^3.6.20"
   },
