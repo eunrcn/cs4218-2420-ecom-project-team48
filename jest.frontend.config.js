@@ -32,11 +32,12 @@ export default {
   // only run these tests
   testMatch: ["<rootDir>/client/src/**/*.test.js"],
 
-  // exclude directory
+  // exclude directory and integration tests
   testPathIgnorePatterns: [
     "<rootDir>/tests-examples/",
     "<rootDir>/client/src/_markbind/",
-    "<rootDir>/client/src/_site/"
+    "<rootDir>/client/src/_site/",
+    ".*\\.integration\\.test\\.js$"
   ],
 
   // jest code coverage
@@ -47,7 +48,8 @@ export default {
     "!tests-examples/**",
     "!client/src/_markbind/**",
     "!client/src/_site/**",
-    "!client/src/*.js"
+    "!client/src/*.js",
+    "!**/*.integration.test.js"
   ],
   coverageDirectory: "coverage/frontend",
   coverageReporters: ["lcov", "text", "json"],
