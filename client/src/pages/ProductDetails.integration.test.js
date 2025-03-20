@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import axios from 'axios';
@@ -8,10 +8,10 @@ import { CartProvider } from '../context/cart';
 
 jest.mock('axios');
 
-jest.mock('react-hot-toast', () => ({
-  success: jest.fn(),
-  error: jest.fn(),
-}));
+// jest.mock('react-hot-toast', () => ({
+//   success: jest.fn(),
+//   error: jest.fn(),
+// }));
 
 jest.mock('react-router-dom', () => ({
   ...jest.requireActual('react-router-dom'),
@@ -90,13 +90,15 @@ describe('ProductDetails Integration Tests', () => {
   });
 
   test('should fetch and display product details', async () => {
-    render(
-      <BrowserRouter>
-        <CartProvider>
-          <ProductDetails />
-        </CartProvider>
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Product Details')).toBeInTheDocument();
@@ -111,13 +113,15 @@ describe('ProductDetails Integration Tests', () => {
   });
 
   test('should fetch and display similar products', async () => {
-    render(
-      <BrowserRouter>
-        <CartProvider>
-          <ProductDetails />
-        </CartProvider>
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Similar Products ➡️')).toBeInTheDocument();
@@ -133,13 +137,15 @@ describe('ProductDetails Integration Tests', () => {
   });
 
   test('should add main product to cart when ADD TO CART button is clicked', async () => {
-    render(
-      <BrowserRouter>
-        <CartProvider>
-          <ProductDetails />
-        </CartProvider>
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Product Details')).toBeInTheDocument();
@@ -159,13 +165,15 @@ describe('ProductDetails Integration Tests', () => {
   });
 
   test('should add similar product to cart when ADD TO CART button is clicked', async () => {
-    render(
-      <BrowserRouter>
-        <CartProvider>
-          <ProductDetails />
-        </CartProvider>
-      </BrowserRouter>
-    );
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
 
     await waitFor(() => {
       expect(screen.getByText('Similar Products ➡️')).toBeInTheDocument();
@@ -181,6 +189,115 @@ describe('ProductDetails Integration Tests', () => {
       expect(cartData).toEqual(expect.arrayContaining([
         expect.objectContaining({ _id: mockRelatedProducts[0]._id })
       ]));
+    });
+  });
+
+  test('should handle non-existent product', async () => {
+    axios.get.mockImplementation((url) => {
+      if (url.includes('/get-product')) {
+        return Promise.resolve({ data: { product: null } });
+      }
+      return Promise.reject(new Error('Invalid URL'));
+    });
+  
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
+  
+    await waitFor(() => {
+      expect(screen.getByText('Product not found')).toBeInTheDocument();
+      expect(screen.getByText('The requested product does not exist or may have been removed.')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: 'Continue Shopping' })).toBeInTheDocument();
+    });
+  });
+
+  test('should handle no similar products', async () => {
+    axios.get.mockImplementation((url) => {
+      if (url.includes('/get-product/')) {
+        return Promise.resolve({ data: { product: mockProduct } });
+      } else if (url.includes('/related-product/')) {
+        return Promise.resolve({ data: { products: [] } });
+      }
+      return Promise.reject(new Error('Not found'));
+    });
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('No Similar Products found')).toBeInTheDocument();
+    });
+  });
+
+  test('should navigate to other product when clicking More Details on similar product', async () => {
+    const mockNavigate = jest.fn();
+    jest.spyOn(require('react-router-dom'), 'useNavigate').mockImplementation(() => mockNavigate);
+
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText(mockRelatedProducts[0].name)).toBeInTheDocument();
+    });
+
+    const moreDetailsButton = screen.getAllByText('More Details')[0];
+    fireEvent.click(moreDetailsButton);
+
+    expect(mockNavigate).toHaveBeenCalledWith(`/product/${mockRelatedProducts[0].slug}`);
+  });
+
+  test('should handle multiple items added to cart', async () => {
+    await act(async () => {
+      render(
+        <BrowserRouter>
+          <CartProvider>
+            <ProductDetails />
+          </CartProvider>
+        </BrowserRouter>
+      );
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText('Product Details')).toBeInTheDocument();
+      expect(screen.getByText(mockRelatedProducts[0].name)).toBeInTheDocument();
+    });
+
+    const addToCartButtons = screen.getAllByRole('button', { name: /ADD TO CART/i });
+    fireEvent.click(addToCartButtons[0]);
+    fireEvent.click(addToCartButtons[1]);
+
+    await waitFor(() => {
+      expect(localStorageMock.setItem).toHaveBeenCalledTimes(2);
+
+      const lastCallArgs = localStorageMock.setItem.mock.calls[1][1];
+      const cartData = JSON.parse(lastCallArgs);
+      expect(cartData).toHaveLength(2);
+      expect(cartData).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({ _id: mockProduct._id }),
+          expect.objectContaining({ _id: mockRelatedProducts[0]._id })
+        ])
+      );
     });
   });
 }); 
