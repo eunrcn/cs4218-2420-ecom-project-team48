@@ -1,14 +1,13 @@
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-    await page.goto("http://localhost:3000/"); // Go to the home page
+    await page.goto("."); // Go to the home page
 });
 
 test.afterEach(async () => {});
 
 test.describe('user register', () => {
     test('user register successfully', async ({ page }) => {
-        await page.goto('http://localhost:3000/');
         await page.getByRole('link', { name: 'Register' }).click();
         await page.getByRole('textbox', { name: 'Enter Your Name' }).click();
         await page.getByRole('textbox', { name: 'Enter Your Name' }).fill('test user');
@@ -27,7 +26,6 @@ test.describe('user register', () => {
     });
 
     test('user login successfully', async ({ page }) => {
-        await page.goto('http://localhost:3000/');
         await page.getByRole('link', { name: 'Login' }).click();
         await page.getByRole('textbox', { name: 'Enter Your Email' }).fill('test-user@example.com');
         await page.getByRole('textbox', { name: 'Enter Your Password' }).click();
