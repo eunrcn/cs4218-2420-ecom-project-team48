@@ -115,41 +115,8 @@ const renderOrderForm = () => {
 };
 
 
-describe("AdminOrders Component", () => {
+describe("AdminOrders Component - Unit Tests", () => {
   test("renders correctly", async () => {
-    renderOrderForm();
-    expect(await screen.findByText(/All Orders/i)).toBeInTheDocument();
-  });
-
-  test("does not call getOrders when auth token is missing", async () => {
-    useAuth.mockReturnValue([null, jest.fn()]);
-
-    const { rerender } = renderOrderForm();
-
-    await waitFor(() => expect(mock.history.get.length).toBe(0));
-
-    useAuth.mockReturnValue([{ token: "dummy-token" }, jest.fn()]);
-
-    rerender(
-      <MemoryRouter initialEntries={["/orders"]}>
-        <Routes>
-          <Route path="/orders" element={<AdminOrders />} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => expect(mock.history.get.length).toBe(1));
-  });
-
-  test("fetches and displays orders", async () => {
-    renderOrderForm();
-    expect(await screen.findByText("Saber")).toBeInTheDocument();
-    expect(await screen.findByText("Processing")).toBeInTheDocument();
-    expect(await screen.findByText("Product")).toBeInTheDocument();
-  });
-
-  test("handles API error for fetching orders", async () => {
-    mock.onGet("/api/v1/auth/all-orders").reply(500);
     renderOrderForm();
     expect(await screen.findByText(/All Orders/i)).toBeInTheDocument();
   });
@@ -170,27 +137,6 @@ describe("AdminOrders Component", () => {
     }));
     renderOrderForm();
     expect(await screen.findByText(/All Orders/i)).toBeInTheDocument();
-  });
-
-  test("updates order status successfully", async () => {
-    renderOrderForm();
-    const select = await screen.findByTestId("status-1");
-    fireEvent.change(select, { target: { value: "Shipped" } });
-
-    await waitFor(() =>
-      expect(mock.history.put[0].url).toBe("/api/v1/auth/order-status/1")
-    );
-    expect(mock.history.put[0].data).toContain('"status":"Shipped"');
-  });
-
-  test("handles API error when updating order status", async () => {
-    mock.onPut("/api/v1/auth/order-status/1").reply(500);
-    console.log = jest.fn();
-    renderOrderForm();
-    const select = await screen.findByTestId("status-1");
-    fireEvent.change(select, { target: { value: "Shipped" } });
-
-    await waitFor(() => expect(console.log).toHaveBeenCalled());
   });
 
   test("displays failed payment status", async () => {

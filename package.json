@@ -14,7 +14,9 @@
     "sonarqube": "sonar-scanner",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:frontend": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.frontend.config.js",
-    "test:backend": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.backend.config.js"
+    "test:backend": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.backend.config.js",
+    "test:backend-integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.backend.integration.config.js",
+    "test:frontend-integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.frontend.integration.config.js"
   },
   "keywords": [],
   "author": "RP",
@@ -61,7 +63,9 @@
   "jest": {
     "projects": [
       "./jest.backend.config.js",
-      "./jest.frontend.config.js"
+      "./jest.frontend.config.js",
+      "./jest.frontend.integration.config.js",
+      "./jest.backend.integration.config.js"
     ],
     "verbose": true,
     "collectCoverage": true,

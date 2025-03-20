@@ -15,6 +15,11 @@ export default {
     "<rootDir>/helpers/*.test.js",
     "<rootDir>/tests/integration/*.test.js"
   ],
+  
+  // explicitly exclude integration tests
+  testPathIgnorePatterns: [
+    ".*\\.integration\\.test\\.js$"
+  ],
 
   // setup files that run before Jest is loaded
   setupFiles: [
@@ -29,7 +34,8 @@ export default {
     "models/**",
     "config/**",
     "routes/**",
-    "helpers/**"
+    "helpers/**",
+    "!**/*.integration.test.js"
   ],
   coverageDirectory: "coverage/backend",
   coverageReporters: ["lcov", "text", "json"],

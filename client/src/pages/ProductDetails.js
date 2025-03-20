@@ -1,47 +1,93 @@
 import React, { useState, useEffect } from "react";
 import Layout from "./../components/Layout";
 import axios from "axios";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import "../styles/ProductDetailsStyles.css";
-import toast from "react-hot-toast";
 import { useCart } from "../context/cart";
-
+import { toast } from "react-hot-toast";
 
 const ProductDetails = () => {
   const params = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState({});
   const [relatedProducts, setRelatedProducts] = useState([]);
-  const [cart, setCart] = useCart();
+  const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
+  const [cart = [], setCart = () => {}] = useCart() || [];
 
-
-  //inital details
+  //initial details
   useEffect(() => {
     if (params?.slug) getProduct();
   }, [params?.slug]);
+  
   //getProduct
   const getProduct = async () => {
     try {
+      setLoading(true);
       const { data } = await axios.get(
         `/api/v1/product/get-product/${params.slug}`
       );
-      setProduct(data?.product);
-      getSimilarProduct(data?.product._id, data?.product.category._id);
+      
+      if (!data?.product) {
+        setNotFound(true);
+        setLoading(false);
+        return;
+      }
+      
+      setProduct(data.product);
+      getSimilarProduct(data.product._id, data.product.category._id);
+      setLoading(false);
     } catch (error) {
       console.log(error);
+      setNotFound(true);
+      setLoading(false);
     }
   };
+  
   //get similar product
   const getSimilarProduct = async (pid, cid) => {
     try {
       const { data } = await axios.get(
         `/api/v1/product/related-product/${pid}/${cid}`
       );
-      setRelatedProducts(data?.products);
+      setRelatedProducts(data?.products || []);
     } catch (error) {
       console.log(error);
     }
   };
+  
+  // Product not found UI
+  if (notFound) {
+    return (
+      <Layout title="Product Not Found">
+        <div className="container text-center mt-5">
+          <div className="error-container">
+            <h1>Product not found</h1>
+            <p className="lead">The requested product does not exist or may have been removed.</p>
+            <Link to="/" className="btn btn-primary mt-3">
+              Continue Shopping
+            </Link>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Loading UI
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container text-center mt-5">
+          <div className="spinner-border" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
+          <p className="mt-3">Loading product details...</p>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Main product details UI
   return (
     <Layout>
       <div className="row container product-details">
@@ -73,9 +119,11 @@ const ProductDetails = () => {
                 "cart",
                 JSON.stringify([...cart, product])
               );
-              toast.success("Item Added to cart");
+              toast.success("Item added to cart");
             }}
-          >ADD TO CART</button>
+          >
+            ADD TO CART
+          </button>
         </div>
       </div>
       <hr />
