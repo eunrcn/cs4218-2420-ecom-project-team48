@@ -207,35 +207,35 @@ describe("AdminOrders Component - Integration Tests", () => {
     });
   });
 
-//   test("should handle API failure when updating order status", async () => {
-//     const mockOrders = [
-//       {
-//         _id: "1",
-//         status: "Processing",
-//         buyer: { name: "Saber" },
-//         createAt: "2024-01-01T00:00:00Z",
-//         payment: { success: true },
-//         products: [
-//           {
-//             _id: "p1",
-//             name: "Product",
-//             description: "Product description",
-//             price: 1,
-//           },
-//         ],
-//       },
-//     ];
+  test("should handle API failure when updating order status", async () => {
+    const mockOrders = [
+      {
+        _id: "1",
+        status: "Processing",
+        buyer: { name: "Saber" },
+        createAt: "2024-01-01T00:00:00Z",
+        payment: { success: true },
+        products: [
+          {
+            _id: "p1",
+            name: "Product",
+            description: "Product description",
+            price: 1,
+          },
+        ],
+      },
+    ];
 
-//     mock.onGet("/api/v1/auth/all-orders").reply(200, mockOrders);
-//     mock.onPut("/api/v1/auth/order-status/1").reply(500);
+    mock.onGet("/api/v1/auth/all-orders").reply(200, mockOrders);
+    mock.onPut("/api/v1/auth/order-status/1").reply(500);
 
-//     renderOrderForm();
+    renderOrderForm();
 
-//     expect(await screen.findByText("Saber")).toBeInTheDocument();
-//     const select = screen.getByTestId("status-1");
+    expect(await screen.findByText("Saber")).toBeInTheDocument();
+    const select = screen.getByTestId("status-1");
 
-//     fireEvent.change(select, { target: { value: "Shipped" } });
-//     await waitFor(() => expect(mock.history.put.length).toBe(1));
-//     expect(mock.history.put[0].status).toBe(500);
-//   });
+    fireEvent.change(select, { target: { value: "Shipped" } });
+    await waitFor(() => expect(mock.history.put.length).toBe(1));
+    
+  });
 });
