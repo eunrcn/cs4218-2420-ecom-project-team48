@@ -7,8 +7,10 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js",
+    "test_server": " DEV_MODE=test nodemon server.js",
     "client": "npm start --prefix ./client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "test_dev": "concurrently \"npm run test_server\" \"npm run client\"",
     "sonarqube": "sonar-scanner",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
     "test:frontend": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.frontend.config.js",
@@ -38,6 +40,7 @@
     "nodemon": "^3.0.3",
     "react-icons": "^5.0.1",
     "slugify": "^1.6.6",
+    "supertest": "^7.0.0",
     "util": "^0.12.5",
     "whatwg-fetch": "^3.6.20"
   },

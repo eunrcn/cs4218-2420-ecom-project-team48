@@ -1,11 +1,16 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
+import { useCart } from "../context/cart";
 import axios from 'axios';
 import ProductDetails from './ProductDetails';
 
 // Mock axios
 jest.mock('axios');
+
+jest.mock("../context/cart", () => ({
+  useCart: jest.fn(),
+}));
 
 // Mock useParams and useNavigate
 jest.mock('react-router-dom', () => ({
@@ -71,6 +76,7 @@ describe('ProductDetails Component', () => {
       return Promise.reject(new Error('Invalid URL'));
     });
 
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>
@@ -93,7 +99,7 @@ describe('ProductDetails Component', () => {
   test('should handle error when fetching product details', async () => {
     const consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
     axios.get.mockRejectedValueOnce(new Error('Failed to fetch product'));
-
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>
@@ -118,7 +124,7 @@ describe('ProductDetails Component', () => {
       }
       return Promise.reject(new Error('Invalid URL'));
     });
-
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>
@@ -144,7 +150,7 @@ describe('ProductDetails Component', () => {
       }
       return Promise.reject(new Error('Invalid URL'));
     });
-
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>
@@ -165,7 +171,7 @@ describe('ProductDetails Component', () => {
     axios.get
       .mockResolvedValueOnce({ data: { product: mockProduct } })
       .mockRejectedValueOnce(new Error('Failed to fetch related products'));
-
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>
@@ -195,7 +201,7 @@ describe('ProductDetails Component', () => {
       }
       return Promise.reject(new Error('Invalid URL'));
     });
-
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>
@@ -219,7 +225,7 @@ describe('ProductDetails Component', () => {
       }
       return Promise.reject(new Error('Invalid URL'));
     });
-
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>
@@ -253,7 +259,7 @@ describe('ProductDetails Component', () => {
       }
       return Promise.reject(new Error('Invalid URL'));
     });
-
+    useCart.mockReturnValue([[], jest.fn()]);
     await act(async () => {
       render(
         <BrowserRouter>

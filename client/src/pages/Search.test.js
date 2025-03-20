@@ -1,12 +1,18 @@
 import { render, screen, fireEvent } from "@testing-library/react";
 import Search from "../pages/Search";
 import { useSearch } from "../context/search";
+import { useCart } from "../context/cart";
+import { useNavigate } from "react-router-dom";
 import "@testing-library/jest-dom";
 import React from "react";
 
 
 jest.mock("../context/cart", () => ({
   useCart: jest.fn(),
+}));
+
+jest.mock("react-router-dom", () => ({
+  useNavigate: jest.fn(),
 }));
 
 jest.mock("../context/search", () => ({
@@ -27,6 +33,9 @@ describe("Search Component", () => {
 
   it("should render the Layout component with the correct title", () => {
     useSearch.mockReturnValue([{ results: [] }, jest.fn()]);
+    
+    useCart.mockReturnValue([[], jest.fn()]);
+    useNavigate.mockReturnValue(jest.fn());
 
     render(<Search />);
 
@@ -42,6 +51,8 @@ describe("Search Component", () => {
   });
 
   it("should display the number of products found", () => {
+    useCart.mockReturnValue([[], jest.fn()]);
+    useNavigate.mockReturnValue(jest.fn());
     useSearch.mockReturnValue([
       {
         results: [
@@ -68,6 +79,8 @@ describe("Search Component", () => {
   });
 
   it("should render product details when there are search results", () => {
+    useCart.mockReturnValue([[], jest.fn()]);
+    useNavigate.mockReturnValue(jest.fn());
     useSearch.mockReturnValue([
       {
         results: [
@@ -92,6 +105,8 @@ describe("Search Component", () => {
   });
 
   it("should render 'Add to Cart' button for each product", () => {
+    useCart.mockReturnValue([[], jest.fn()]);
+    useNavigate.mockReturnValue(jest.fn());
     useSearch.mockReturnValue([
       {
         results: [
