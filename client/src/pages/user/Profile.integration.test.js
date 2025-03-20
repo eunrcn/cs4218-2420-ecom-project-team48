@@ -80,7 +80,7 @@ describe("User Profile Integration Test", () => {
             name: "Jane Doe",
             email: "john@example.com",
             phone: "9876543210",
-            address: "456 Elm St",
+            address: "456 Alt St",
           },
         },
     });
@@ -125,6 +125,16 @@ describe("User Profile Integration Test", () => {
     expect(localStorage.setItem).toHaveBeenCalledWith(
       "auth",
       expect.stringContaining('"name":"Jane Doe"')
+    );
+
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      "auth",
+      expect.stringContaining('"address":"456 Alt St"')
+    );
+
+    expect(localStorage.setItem).toHaveBeenCalledWith(
+      "auth",
+      expect.stringContaining('"phone":"9876543210')
     );
       
   });
