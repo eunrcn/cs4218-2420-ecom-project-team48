@@ -20,12 +20,7 @@ const mockProducts = [{
   photo: { data: Buffer.from('/9j/4A', 'base64'), contentType: "image/jpeg" }
 }];
 
-const disconnectDB = async () => {
-  await mongoose.disconnect();
-};
-
 beforeAll(async () => {
-  await disconnectDB();
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
   const conn = await mongoose.connect(mongoUri);
@@ -108,7 +103,7 @@ describe("Search Product Integration Test", () => {
 
   it("should return status 400 when an there is an error", async () => {
     // To simulate a db crash
-    await disconnectDB();
+    await mongoose.disconnect();
 
     const res = await request(app).get("/api/v1/product/search/laptop");
     expect(res.status).toBe(400);
@@ -141,7 +136,7 @@ describe("Related Product Integration Test", () => {
 
   it("should return status 400 when an there is an error", async () => {
     // To simulate a db crash
-    await disconnectDB();
+    await mongoose.disconnect();
 
     const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[0]._id + "/" + book_category_id);
     expect(res.status).toBe(400);

@@ -1,5 +1,9 @@
 import app from "./app.js";
+import connectDB from "./config/db.js";
 import dotenv from "dotenv";
+
+// database config
+connectDB();
 
 // configure env
 dotenv.config();

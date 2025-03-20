@@ -1,13 +1,13 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import categoryModel from "../models/categoryModel.js";
+import categoryModel from "../../models/categoryModel.js";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import path from "path";
-import { hashPassword } from "../helpers/authHelper.js";
-import orderModel from "../models/orderModel.js";
-import productModel from "../models/productModel.js";
-import userModel from "../models/userModel.js";
+import { hashPassword } from "../../helpers/authHelper.js";
+import orderModel from "../../models/orderModel.js";
+import productModel from "../../models/productModel.js";
+import userModel from "../../models/userModel.js";
 
 // Populate the database
 const __filename = fileURLToPath(import.meta.url);
@@ -31,10 +31,10 @@ const sampleUserData = [{
     role: 0
 }];
 
-const categoryData = fs.readFileSync(path.join(__dirname, "sample_data/test.categories.json"), "utf-8");
-const orderData = fs.readFileSync(path.join(__dirname, "sample_data/test.orders.json"), "utf-8");
-const productData = fs.readFileSync(path.join(__dirname, "sample_data/test.products.json"), "utf-8");
-// const userData = fs.readFileSync(path.join(__dirname, "sample_data/test.categories.json"), "utf-8");
+const categoryData = fs.readFileSync(path.join(__dirname, "../sample_data/test.categories.json"), "utf-8");
+const orderData = fs.readFileSync(path.join(__dirname, "../sample_data/test.orders.json"), "utf-8");
+const productData = fs.readFileSync(path.join(__dirname, "../sample_data/test.products.json"), "utf-8");
+// const userData = fs.readFileSync(path.join(__dirname, "../sample_data/test.categories.json"), "utf-8");
 
 
 
@@ -87,6 +87,8 @@ const setupTestDB = async () => {
         
         // Insert Data into User Model       
         await userModel.insertMany(sampleUserData);
+
+        console.log(`Connected To Test Mongodb Memory Server ${conn.connection.host}`.bgMagenta.white);
 
 
     } catch (error) {
