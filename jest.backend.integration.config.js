@@ -7,7 +7,8 @@ export default {
     "<rootDir>/models/*.integration.test.js",
     "<rootDir>/config/*.integration.test.js",
     "<rootDir>/routes/*.integration.test.js",
-    "<rootDir>/helpers/*.integration.test.js"
+    "<rootDir>/helpers/*.integration.test.js",
+    "<rootDir>/tests/integration/*.test.js"
   ],
   "setupFiles": [
     "<rootDir>/jest.setup.js"
