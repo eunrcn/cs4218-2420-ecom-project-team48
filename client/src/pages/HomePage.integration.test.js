@@ -207,7 +207,7 @@ describe("HomePage integration", () => {
     fireEvent.click(detailsButton);
     expect(navigateMock).toHaveBeenCalledWith(`/product/${mockProducts[0].slug}`);
 
-    // 4. pass product to cart and navigate to cart
+    // 4. pass product to cart
     const storedCart = JSON.parse(localStorage.getItem("cart") || "[]");
     useCart.mockReturnValue([storedCart, jest.fn()]);
 
@@ -223,6 +223,7 @@ describe("HomePage integration", () => {
     const removeButton = screen.getByRole("button", { name: "Remove" });
     fireEvent.click(removeButton);
 
+    // check that cart is empty
     await waitFor(() => {
       expect(localStorage.setItem).toHaveBeenCalledWith("cart", "[]"); // cart should be empty after remove
     });
