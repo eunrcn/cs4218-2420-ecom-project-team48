@@ -31,15 +31,6 @@ const sampleUserData = [{
   address: "admin",
   answer: "admin",
   role: 1
-}, {
-  _id: new mongoose.Types.ObjectId(),
-  name: "user",
-  email: "user@user.com",
-  password: "user",
-  phone: "12345678",
-  address: "user",
-  answer: "user",
-  role: 0
 }];
 
 beforeAll(async () => {
@@ -50,7 +41,6 @@ beforeAll(async () => {
   // Add user access & generate JWT token
   await userModel.insertMany(sampleUserData);
   adminToken = await JWT.sign({ _id: sampleUserData[0]._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-  userToken = await JWT.sign({ _id: sampleUserData[0]._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 });
 
 
@@ -95,7 +85,6 @@ describe("Search Product Integration Test", () => {
     expect(res.body[0].quantity).toEqual(mockProducts[1].quantity);
     expect(res.body[0].shipping).toEqual(mockProducts[1].shipping);
   });
-
 
   it("should return matching products when searching by name or description", async () => {
     // This should return the novel & textbook
@@ -153,7 +142,6 @@ describe("Search Product Integration Test", () => {
     expect(res.body[0].shipping).toBe(true);
   });
 
-
   it("should update a product and find it via search", async () => {
     //Update product
     await request(app).put("/api/v1/product/update-product/" + mockProducts[2]._id)
@@ -176,11 +164,10 @@ describe("Search Product Integration Test", () => {
     expect(res.body[0].description).toBe("A test laptop");
   });
 
-
   it("should delete a product and not find it via search", async () => {
     //Delete product
     await request(app).delete("/api/v1/product/delete-product/" + mockProducts[2]._id)
-    .set("Authorization", adminToken);
+      .set("Authorization", adminToken);
 
     //Should not find any matching products
     const res = await request(app).get("/api/v1/product/search/Laptop");
@@ -226,7 +213,7 @@ describe("Related Product Integration Test", () => {
       .expect(201);
 
     //Search for product
-    const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[2]._id + "/" +  mockProducts[2].category);
+    const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[2]._id + "/" + mockProducts[2].category);
     expect(res.status).toBe(200);
     expect(res.body.products).toHaveLength(1);
 
@@ -238,13 +225,12 @@ describe("Related Product Integration Test", () => {
     expect(res.body.products[0].shipping).toBe(true);
   });
 
-
   it("should update a product and ensure it still appears as another product's related product", async () => {
     //Update product category of novel to match laptop
     await request(app).put("/api/v1/product/update-product/" + mockProducts[0]._id)
       .set("Authorization", adminToken)
-      .field('name',  mockProducts[0].name)
-      .field('description',  mockProducts[0].description)
+      .field('name', mockProducts[0].name)
+      .field('description', mockProducts[0].description)
       .field('price', mockProducts[0].price)
       .field('category', mockProducts[2].category.toString()) // Updated Category
       .field('quantity', mockProducts[0].quantity)
@@ -252,7 +238,7 @@ describe("Related Product Integration Test", () => {
       .expect(201);
 
     //Search for product
-    const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[2]._id + "/" +  mockProducts[2].category);
+    const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[2]._id + "/" + mockProducts[2].category);
     expect(res.status).toBe(200);
     expect(res.body.products).toHaveLength(1);
 
@@ -264,16 +250,75 @@ describe("Related Product Integration Test", () => {
     expect(res.body.products[0].shipping).toBe(mockProducts[0].shipping);
   });
 
-
   it("should delete a product and ensure it no longer appears as a related product", async () => {
     //Delete novel
     await request(app).delete("/api/v1/product/delete-product/" + mockProducts[1]._id)
-    .set("Authorization", adminToken);
+      .set("Authorization", adminToken);
 
     //Should not find any related products
-    const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[0]._id + "/" +  mockProducts[0].category);
+    const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[0]._id + "/" + mockProducts[0].category);
     expect(res.status).toBe(200);
     expect(res.body.products).toHaveLength(0);
   });
+});
 
+
+describe("Product Count Integration Test", () => {
+
+  it("should return total count of all the products", async () => {
+    const res = await request(app).get("/api/v1/product/product-count");
+
+    expect(res.status).toBe(200);
+    expect(res.body.total).toBe(mockProducts.length);
+  });
+
+  it("should create a product and increase the product count", async () => {
+    //Create product
+    await request(app).post("/api/v1/product/create-product")
+      .set("Authorization", adminToken)
+      .field('name', "Milo drink")
+      .field('description', "A delicious drink")
+      .field('price', "10")
+      .field('category', new mongoose.Types.ObjectId().toString())
+      .field('quantity', "10")
+      .field('shipping', "true")
+      .expect(201);
+
+    //Verify that the product count has increased
+    const res = await request(app).get("/api/v1/product/product-count");
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.total).toBe(mockProducts.length + 1);
+  });
+
+  it("should update a product and verify that product count is unchanged", async () => {
+    //Update product
+    await request(app).put("/api/v1/product/update-product/" + mockProducts[2]._id)
+      .set("Authorization", adminToken)
+      .field('name', "Test Laptop")
+      .field('description', "A test laptop")
+      .field('price', mockProducts[2].price)
+      .field('category', mockProducts[2].category.toString())
+      .field('quantity', mockProducts[2].quantity)
+      .field('shipping', mockProducts[2].shipping)
+      .expect(201);
+
+    //Verify that the product count has increased
+    const res = await request(app).get("/api/v1/product/product-count");
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.total).toBe(mockProducts.length);
+  });
+
+  it("should delete a product and not decrease the product count", async () => {
+    //Delete product
+    await request(app).delete("/api/v1/product/delete-product/" + mockProducts[2]._id)
+      .set("Authorization", adminToken);
+
+    //Should not find any matching products
+    const res = await request(app).get("/api/v1/product/product-count");
+    expect(res.status).toBe(200);
+    expect(res.body.success).toBe(true);
+    expect(res.body.total).toBe(mockProducts.length - 1);
+  });
 });
