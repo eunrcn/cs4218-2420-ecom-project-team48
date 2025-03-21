@@ -51,8 +51,6 @@ describe("HomePage integration", () => {
     });
   });
 
-  let mockLocalStorage = {};
-
   beforeEach(() => {
     axios.get.mockImplementation((url) => {
       if (url === "/api/v1/category/get-category") {
@@ -74,7 +72,7 @@ describe("HomePage integration", () => {
   });
 
   // Simulating complete user flow: rendering the home page, filter by category, price, add an item to the cart, and reset filters.
-  it("renders HomePage with categories and products", async () => {
+  it("should allow a user to browse, filter, add to cart, and reset filters", async () => {
 
     // mock
     axios.post.mockImplementation((url) => {
