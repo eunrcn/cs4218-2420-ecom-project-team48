@@ -73,3 +73,86 @@ test("Logout", async ({ page }) => {
     await page.getByRole('link', { name: 'Logout' }).click();
     await expect(page.getByText('LOGIN FORM')).toBeVisible();
 });
+
+test("should be able to change username and update", async ({ page }) => {
+  await page.getByRole("button", { name: "test user" }).click();
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  await page.getByRole("link", { name: "Profile" }).click();
+  await page.getByRole("textbox", { name: "Enter Your Name" }).fill("user1");
+  await page.getByRole("button", { name: "UPDATE" }).click();
+  await page
+    .locator("div")
+    .filter({ hasText: /^Profile Updated Successfully$/ })
+    .nth(1)
+    .click();
+  await page.getByRole("button", { name: "user1" }).click();
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  await page.getByRole("heading", { name: "user1" }).click();
+  await page.getByRole("link", { name: "Profile" }).click();
+  await page
+    .getByRole("textbox", { name: "Enter Your Name" })
+    .fill("test user");
+  await page.getByRole("button", { name: "UPDATE" }).click();
+  await page
+    .locator("div")
+    .filter({ hasText: /^Profile Updated Successfully$/ })
+    .nth(1)
+    .click();
+  await page.getByRole("button", { name: "test user" }).click();
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  await page.getByRole("heading", { name: "test user" }).first().click();
+});
+
+// test("should be able to change number and update", async ({ page }) => {
+//   await page.getByRole("button", { name: "test user" }).click();
+//   await page.getByRole("link", { name: "Dashboard" }).click();
+//   await page.getByRole("link", { name: "Profile" }).click();
+//   await page.getByRole("textbox", { name: "Enter Your Phone" }).click();
+//   await page
+//     .getByRole("textbox", { name: "Enter Your Phone" })
+//     .fill("23456789");
+//   await page.getByRole("button", { name: "UPDATE" }).click();
+//   await page.getByText("Profile Updated Successfully").click();
+  
+//   await page.getByRole("button", { name: "test user" }).click();
+//   await page.getByRole("link", { name: "Dashboard" }).click();
+//   await page.getByRole("link", { name: "Profile" }).click();
+//   await page.getByRole("textbox", { name: "Enter Your Phone" }).click();
+//   await page
+//     .getByRole("textbox", { name: "Enter Your Phone" })
+//     .fill("99912345");
+//   await page.getByRole("button", { name: "UPDATE" }).click();
+//   await page.getByText("Profile Updated Successfully").click();
+// });
+
+// test("should be able to change address and update", async ({ page }) => {
+//   await page.getByRole("button", { name: "test user" }).click();
+//   await page.getByRole("link", { name: "Dashboard" }).click();
+//   await page.getByRole("link", { name: "Profile" }).click();
+//   await page.getByRole("textbox", { name: "Enter Your Address" }).click();
+//   await page
+//     .getByRole("textbox", { name: "Enter Your Address" })
+//     .fill("qwerty");
+//   await page.getByRole("button", { name: "UPDATE" }).click();
+//   await page.getByText("Profile Updated Successfully").click();
+//   await page.getByRole("button", { name: "user" }).click();
+//   await page.getByRole("link", { name: "Dashboard" }).click();
+//   await expect(
+//     page.getByRole("heading", { name: "qwerty", exact: true })
+//   ).toBeVisible();
+    
+//   await page.getByRole("button", { name: "test user" }).click();
+//   await page.getByRole("link", { name: "Dashboard" }).click();
+//   await page.getByRole("link", { name: "Profile" }).click();
+//   await page.getByRole("textbox", { name: "Enter Your Address" }).click();
+//   await page
+//     .getByRole("textbox", { name: "Enter Your Address" })
+//     .fill("singapore");
+//   await page.getByRole("button", { name: "UPDATE" }).click();
+//   await page.getByText("Profile Updated Successfully").click();
+//   await page.getByRole("button", { name: "user" }).click();
+//   await page.getByRole("link", { name: "Dashboard" }).click();
+//   await expect(
+//     page.getByRole("heading", { name: "singapore", exact: true })
+//   ).toBeVisible();
+// });
