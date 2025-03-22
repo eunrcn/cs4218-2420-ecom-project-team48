@@ -7,7 +7,7 @@ test.beforeEach(async ({ page }) => {
 test("cart is empty when no items are added", async ({ page }) => {
   await page.getByRole("link", { name: "Cart" }).click();
   await expect(page.locator("h1")).toContainText(
-    "Hello Guest Your Cart Is Empty"
+    "Hello Guest, Your Cart Is Empty"
   );
   await expect(page.getByRole("main")).toContainText("Total : $0.00");
 });

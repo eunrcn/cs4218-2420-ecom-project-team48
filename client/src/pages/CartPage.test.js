@@ -229,7 +229,7 @@ describe("CartPage Component", () => {
 
       renderCartPage();
 
-      const loginButton = screen.getByText("Plase Login to checkout");
+      const loginButton = screen.getByText("Please login to checkout");
       fireEvent.click(loginButton);
 
       expect(mockNavigate).toHaveBeenCalledWith("/login", {

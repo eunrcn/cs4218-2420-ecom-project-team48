@@ -121,12 +121,10 @@ const HomePage = () => {
           <h4 className="text-center">Filter By Category</h4>
           <div className="d-flex flex-column">
             {categories?.map((c) => (
-              <Checkbox
-                key={c._id}
-                onChange={(e) => handleFilter(e.target.checked, c._id)}
-              >
-                {c.name}
-              </Checkbox>
+              <div key={c._id} className="d-flex align-items-center">
+                <Checkbox onChange={(e) => handleFilter(e.target.checked, c._id)} />
+                <span className="ms-2">{c.name}</span>
+              </div>
             ))}
           </div>
           {/* price filter */}
@@ -152,7 +150,7 @@ const HomePage = () => {
         <div className="col-md-9 ">
           <h1 className="text-center">All Products</h1>
           <div className="d-flex flex-wrap">
-            {products?.map((p) => ( 
+            {products?.map((p) => (
               <div className="card m-2" key={p._id}>
                 <img
                   src={`/api/v1/product/product-photo/${p._id}`}
