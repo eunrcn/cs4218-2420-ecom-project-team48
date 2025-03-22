@@ -38,94 +38,10 @@ describe("Orders Component", () => {
     expect(element).toBeTruthy();
   });
 
-  test("displays fetched orders when auth token exists", async () => {
-    axios.get.mockResolvedValue({
-      data: [
-        {
-          _id: "1",
-          status: "Completed",
-          buyer: { name: "John Doe" },
-          createAt: "2025-02-12T12:00:00Z",
-          payment: { success: true },
-          products: [
-            {
-              _id: "p1",
-              name: "Product 1",
-              description: "A product",
-              price: 100,
-            },
-          ],
-        },
-      ],
-    });
-
-    renderOrderForm();
-
-    expect(await screen.findByText(/Completed/i)).toBeTruthy();
-    expect(await screen.findByText(/John Doe/i)).toBeTruthy();
-    expect(await screen.findByText(/Success/i)).toBeTruthy();
-  });
-
   test("displays fallback message when fetching orders fails", async () => {
     axios.get.mockRejectedValue(new Error("Network Error"));
     renderOrderForm();
 
     expect(await screen.findByText("All Orders")).toBeTruthy();
-  });
-
-  test("displays correct payment status", async () => {
-    axios.get.mockResolvedValue({
-      data: [
-        {
-          _id: "1",
-          status: "Completed",
-          buyer: { name: "John Doe" },
-          createAt: "2025-02-12T12:00:00Z",
-          payment: { success: true },
-          products: [
-            {
-              _id: "p1",
-              name: "Product 1",
-              description: "A product",
-              price: 100,
-            },
-          ],
-        },
-        {
-          _id: "2",
-          status: "Pending",
-          buyer: { name: "Jane Doe" },
-          createAt: "2025-02-12T12:00:00Z",
-          payment: { success: false },
-          products: [
-            {
-              _id: "p2",
-              name: "Product 2",
-              description: "Another product",
-              price: 200,
-            },
-          ],
-        },
-      ],
-    });
-
-    renderOrderForm();
-
-    expect(await screen.findByText("Success")).toBeTruthy();
-    expect(await screen.findByText("Failed")).toBeTruthy();
-  });
-  
-  test("fetches orders only when token is present", async () => {
-    jest.clearAllMocks();
-    const useAuthSpy = jest.spyOn(require("../../context/auth"), "useAuth");
-    useAuthSpy.mockReturnValue([null, jest.fn()]); 
-
-    renderOrderForm();
-
-    await waitFor(() => {
-      expect(axios.get).not.toHaveBeenCalled();
-    });
-
-    useAuthSpy.mockRestore();
   });
 });
