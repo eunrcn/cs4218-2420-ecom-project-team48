@@ -5,6 +5,7 @@ categoryModel.findOne = jest.fn();
 categoryModel.findByIdAndUpdate = jest.fn();
 categoryModel.findByIdAndDelete = jest.fn();
 categoryModel.find = jest.fn();
+categoryModel.findById = jest.fn();
 
 // Use unstable_mockModule as it is ESM
 jest.unstable_mockModule('../models/categoryModel.js', () => ({
@@ -51,9 +52,12 @@ describe('createCategoryController', () => {
     // Mock findOne to return null (no existing category)
     categoryModel.findOne.mockResolvedValueOnce(null);
 
+    // Add spaces to test trimming
+    mockReq.body.name = '  Test Category  ';
+
     const mockSavedCategory = {
       name: 'Test Category',
-      slug: 'Test-Category', // Slugs are in uppercase - mongoose converts and stores it as lowercase (for categories)
+      slug: 'test-category',
     };
 
     categoryModel.mockImplementationOnce(() => ({
@@ -62,7 +66,9 @@ describe('createCategoryController', () => {
 
     await createCategoryController(mockReq, mockRes);
 
-    expect(categoryModel.findOne).toHaveBeenCalledWith({ name: 'Test Category' });
+    expect(categoryModel.findOne).toHaveBeenCalledWith({ 
+      name: { $regex: new RegExp('^Test Category$', 'i') }
+    });
     expect(mockRes.status).toHaveBeenCalledWith(201);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: true,
@@ -82,19 +88,24 @@ describe('createCategoryController', () => {
     });
   });
 
-  it('should return error if category already exists', async () => {
+  it('should return error if category already exists (case-insensitive)', async () => {
     const existingCategory = {
       name: 'Test Category',
-      slug: 'Test-Category', // Slugs are in uppercase - mongoose converts and stores it as lowercase (for categories)
+      slug: 'test-category',
     };
     categoryModel.findOne.mockResolvedValueOnce(existingCategory);
 
+    // Try to create with different case
+    mockReq.body.name = 'TEST CATEGORY';
+
     await createCategoryController(mockReq, mockRes);
 
-    expect(categoryModel.findOne).toHaveBeenCalledWith({ name: 'Test Category' });
-    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(categoryModel.findOne).toHaveBeenCalledWith({ 
+      name: { $regex: new RegExp('^TEST CATEGORY$', 'i') }
+    });
+    expect(mockRes.status).toHaveBeenCalledWith(409);
     expect(mockRes.send).toHaveBeenCalledWith({
-      success: true,
+      success: false,
       message: 'Category Already Exists',
     });
   });
@@ -140,33 +151,50 @@ describe('updateCategoryController', () => {
   });
 
   it('should update category successfully', async () => {
+    // Mock the current category
+    const currentCategory = {
+      _id: 'category123',
+      name: 'Old Category',
+      slug: 'old-category',
+    };
+    categoryModel.findById.mockResolvedValueOnce(currentCategory);
+
+    // Mock that no existing category with same name exists
     const updatedCategory = {
       name: 'New Category',
-      slug: 'New-Category', // Slugs are in uppercase - mongoose converts and stores it as lowercase (for categories)
+      slug: 'new-category',
     };
+    categoryModel.findOne.mockResolvedValueOnce(null);
     categoryModel.findByIdAndUpdate.mockResolvedValueOnce(updatedCategory);
+
+    // Add spaces to test trimming
+    mockReq.body.name = '  New Category  ';
 
     await updateCategoryController(mockReq, mockRes);
 
+    expect(categoryModel.findById).toHaveBeenCalledWith('category123');
+    expect(categoryModel.findOne).toHaveBeenCalledWith({ 
+      name: { $regex: new RegExp('^New Category$', 'i') }
+    });
     expect(categoryModel.findByIdAndUpdate).toHaveBeenCalledWith(
       'category123',
       {
         name: 'New Category',
-        slug: 'New-Category',
+        slug: 'new-category',
       },
       { new: true }
     );
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: true,
-      messsage: 'Category Updated Successfully',
+      message: 'Category Updated Successfully',
       category: updatedCategory,
     });
   });
 
   it('should handle database errors during update', async () => {
     const mockError = new Error('Database error');
-    categoryModel.findByIdAndUpdate.mockRejectedValueOnce(mockError);
+    categoryModel.findById.mockRejectedValueOnce(mockError);
 
     await updateCategoryController(mockReq, mockRes);
 
@@ -189,7 +217,7 @@ describe('updateCategoryController', () => {
     castError.value = 'abc';
     castError.path = '_id';
 
-    categoryModel.findByIdAndUpdate.mockRejectedValueOnce(castError);
+    categoryModel.findById.mockRejectedValueOnce(castError);
 
     await updateCategoryController(mockReq, mockRes);
 
@@ -201,25 +229,111 @@ describe('updateCategoryController', () => {
     });
   });
 
-  it("should return success true with category as null when the category does not exist", async () => {
-    // Simulate no category is found
-    categoryModel.findByIdAndUpdate.mockResolvedValueOnce(null);
+  it('should allow updating a category with its own name (no change)', async () => {
+    // Mock the current category
+    const currentCategory = {
+      _id: 'category123',
+      name: 'Test Category',
+      slug: 'test-category',
+    };
+    categoryModel.findById.mockResolvedValueOnce(currentCategory);
+
+    // Mock the update
+    const updatedCategory = {
+      name: 'Test Category',
+      slug: 'test-category',
+    };
+    categoryModel.findByIdAndUpdate.mockResolvedValueOnce(updatedCategory);
+
+    // Try to update with the same name
+    mockReq.body.name = 'Test Category';
 
     await updateCategoryController(mockReq, mockRes);
 
+    expect(categoryModel.findById).toHaveBeenCalledWith('category123');
     expect(categoryModel.findByIdAndUpdate).toHaveBeenCalledWith(
       'category123',
       {
-        name: 'New Category',
-        slug: 'New-Category',
+        name: 'Test Category',
+        slug: 'test-category',
       },
       { new: true }
     );
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: true,
-      messsage: "Category Updated Successfully",
-      category: null,
+      message: 'Category Updated Successfully',
+      category: updatedCategory,
+    });
+  });
+
+  it('should allow updating a category with its own name in different case', async () => {
+    // Mock the current category
+    const currentCategory = {
+      _id: 'category123',
+      name: 'Test Category',
+      slug: 'test-category',
+    };
+    categoryModel.findById.mockResolvedValueOnce(currentCategory);
+
+    // Mock the update
+    const updatedCategory = {
+      name: 'TEST CATEGORY',
+      slug: 'test-category',
+    };
+    categoryModel.findByIdAndUpdate.mockResolvedValueOnce(updatedCategory);
+
+    // Try to update with the same name but different case
+    mockReq.body.name = 'TEST CATEGORY';
+
+    await updateCategoryController(mockReq, mockRes);
+
+    expect(categoryModel.findById).toHaveBeenCalledWith('category123');
+    expect(categoryModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      'category123',
+      {
+        name: 'TEST CATEGORY',
+        slug: 'test-category',
+      },
+      { new: true }
+    );
+    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: true,
+      message: 'Category Updated Successfully',
+      category: updatedCategory,
+    });
+  });
+
+  it('should return error if category name already exists during update (case-insensitive)', async () => {
+    // Mock the current category
+    const currentCategory = {
+      _id: 'category123',
+      name: 'Old Category',
+      slug: 'old-category',
+    };
+    categoryModel.findById.mockResolvedValueOnce(currentCategory);
+
+    // Mock existing category with target name
+    const existingCategory = {
+      name: 'New Category',
+      slug: 'new-category',
+    };
+    categoryModel.findOne.mockResolvedValueOnce(existingCategory);
+
+    // Try to update with name that already exists
+    mockReq.body.name = 'NEW CATEGORY';
+
+    await updateCategoryController(mockReq, mockRes);
+
+    expect(categoryModel.findById).toHaveBeenCalledWith('category123');
+    expect(categoryModel.findOne).toHaveBeenCalledWith({ 
+      name: { $regex: new RegExp('^NEW CATEGORY$', 'i') }
+    });
+    expect(mockRes.status).toHaveBeenCalledWith(409);
+    expect(mockRes.send).toHaveBeenCalledWith({
+      success: false,
+      message: 'Category name already exists',
     });
   });
 });
@@ -296,17 +410,17 @@ describe('deleteCategoryController', () => {
     });
   });
 
-  it('should return success true when category does not exist', async () => {
+  it('should return 404 when category does not exist', async () => {
     // Simulate no category is found
     categoryModel.findByIdAndDelete.mockResolvedValueOnce(null);
 
     await deleteCategoryController(mockReq, mockRes);
 
     expect(categoryModel.findByIdAndDelete).toHaveBeenCalledWith('category123');
-    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.status).toHaveBeenCalledWith(404);
     expect(mockRes.send).toHaveBeenCalledWith({
-      success: true,
-      message: "Category Deleted Successfully",
+      success: false,
+      message: 'Category not found',
     });
   });
 });
@@ -413,7 +527,7 @@ describe('singleCategoryController', () => {
     expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: true,
-      message: 'Get SIngle Category SUccessfully',
+      message: 'Get Single Category Successfully',
       category: mockCategory,
     });
   });
@@ -424,11 +538,10 @@ describe('singleCategoryController', () => {
     await singleCategoryController(mockReq, mockRes);
 
     expect(categoryModel.findOne).toHaveBeenCalledWith({ slug: 'test-category' });
-    expect(mockRes.status).toHaveBeenCalledWith(200);
+    expect(mockRes.status).toHaveBeenCalledWith(404);
     expect(mockRes.send).toHaveBeenCalledWith({
-      success: true,
-      message: 'Get SIngle Category SUccessfully',
-      category: null,
+      success: false,
+      message: 'Category not found',
     });
   });
 

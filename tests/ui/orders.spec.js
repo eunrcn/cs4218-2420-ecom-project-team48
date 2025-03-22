@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(".", { timeout: 60000 });
+  await page.goto(".");
 });
+
 
 test("should add item to cart after login and verify cart content", async ({
   page,
@@ -62,29 +63,63 @@ test("should complete payment after adding item to cart", async ({ page }) => {
 });
 
 
-// test("admin should be able to update order status", async ({
-//   page,
-// }) => {
-//   await page.getByRole("link", { name: "Login" }).click();
-//   await page.getByRole("textbox", { name: "Enter Your Email" }).click();
-//   await page
-//     .getByRole("textbox", { name: "Enter Your Email" })
-//     .fill("admin@admin.com");
-//   await page.getByRole("textbox", { name: "Enter Your Password" }).click();
-//   await page
-//     .getByRole("textbox", { name: "Enter Your Password" })
-//     .fill("admin");
-//   await page.getByRole("button", { name: "LOGIN" }).click();
-//   await page.getByRole("button", { name: "admin" }).click();
-//   await page.getByRole("link", { name: "Dashboard" }).click();
-//   await page.getByRole("link", { name: "Orders" }).click();
-//   await page.getByText("Not Process").click();
-//   await page.waitForTimeout(1000);
-//   await page.getByTitle("Cancelled").locator("div").click();
-//   await page
-//     .getByTestId("status-67a21938cf4efddf1e5358d1")
-//     .getByTitle("Cancelled")
-//     .click();
-//   await page.getByTitle("Shipped").locator("div").click();
-//   await page.getByRole("button", { name: "admin" }).click();
-// });
+test("admin should be able to update order status", async ({ page }) => {
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Enter Your Email" }).click();
+  await page
+    .getByRole("textbox", { name: "Enter Your Email" })
+    .fill("admin@admin.com");
+  await page.getByRole("textbox", { name: "Enter Your Password" }).click();
+  await page
+    .getByRole("textbox", { name: "Enter Your Password" })
+    .fill("admin");
+  await page.getByRole("button", { name: "LOGIN" }).click();
+  await page.getByRole("button", { name: "admin" }).click();
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  await page.getByRole("link", { name: "Orders" }).click();
+
+  await page.getByText("Not Process").click();
+  await page
+    .locator("div")
+    .filter({ hasText: "Not ProcessProcessingNot" })
+    .nth(1)
+    .click();
+});
+
+test("admin should be able to view orders", async ({ page }) => {
+  await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Enter Your Email" }).click();
+  await page
+    .getByRole("textbox", { name: "Enter Your Email" })
+    .fill("admin@admin.com");
+  await page.getByRole("textbox", { name: "Enter Your Password" }).click();
+  await page
+    .getByRole("textbox", { name: "Enter Your Password" })
+    .fill("admin");
+  await page.getByRole("button", { name: "LOGIN" }).click();
+  await page.getByRole("button", { name: "admin" }).click();
+  await page.getByRole("link", { name: "Dashboard" }).click();
+  await page.getByRole("link", { name: "Orders" }).click();
+
+    await expect(page.getByText("All Orders#StatusBuyer")).toBeVisible();
+    await expect(
+      page
+        .locator("div")
+        .filter({
+          hasText: /^NUS T-shirtPlain NUS T-shirt for salePrice : 4\.99$/,
+        })
+        .first()
+    ).toBeVisible();
+    await expect(
+      page
+        .locator("div")
+        .filter({ hasText: /^LaptopA powerful laptopPrice : 1499\.99$/ })
+        .first()
+    ).toBeVisible();
+    await expect(
+      page
+        .locator("div")
+        .filter({ hasText: /^LaptopA powerful laptopPrice : 1499\.99$/ })
+        .nth(2)
+    ).toBeVisible();
+});
