@@ -72,8 +72,9 @@ describe("Category Controller Integration Tests", () => {
     test("should handle non-existent category slug", async () => {
       const res = await request(app).get("/api/v1/category/single-category/non-existent");
       
-      expect(res.status).toBe(200);
-      expect(res.body.category).toBeNull();
+      expect(res.status).toBe(404);
+      expect(res.body.success).toBe(false);
+      expect(res.body.message).toBe("Category not found");
     });
 
     test("should handle special characters in slug", async () => {
