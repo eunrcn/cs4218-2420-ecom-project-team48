@@ -93,6 +93,14 @@ describe("AdminDashboard Integration", () => {
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
   });
 
+  test("should handle no auth data in localStorage", async () => {
+    localStorage.clear();
+
+    renderAdminDashboard();
+
+    expect(screen.queryByText("Admin Name : Admin User")).not.toBeInTheDocument();
+  });
+
   test("should render admin dashboard with correct data for a different admin user", async () => {
     const testAdmin = {
       user: {
