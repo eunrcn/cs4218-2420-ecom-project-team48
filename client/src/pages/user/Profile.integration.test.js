@@ -5,6 +5,7 @@ import { MemoryRouter, Routes, Route } from "react-router-dom";
 import "@testing-library/jest-dom/extend-expect";
 import toast from "react-hot-toast";
 import Profile from "./Profile";
+import Login from "../Auth/Login";
 
 jest.mock("axios");
 jest.mock("react-hot-toast");
@@ -138,5 +139,36 @@ describe("User Profile Integration Test", () => {
     );
       
   });
+
+  it("should redirect to login page if not logged in", async () => {
+    axios.put.mockResolvedValueOnce({
+      data: {
+        updatedUser: {
+          name: "John Doe",
+          email: "john@example.com",
+          phone: "9876543210",
+          address: "456 Alt St",
+        },
+      },
+    });
+
+    // 1. Set up initial render
+    render(
+        <MemoryRouter initialEntries={["/profile"]}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<Profile />} />
+          </Routes>
+        </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByText('John Doe'));
+    fireEvent.click(screen.getByText('Logout'));
+    await waitFor(() => screen.getByText("LOGIN FORM"));
+
+    
+  });
+
+
 
 });
