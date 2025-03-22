@@ -1,8 +1,9 @@
 import { test, expect } from "@playwright/test";
 
 test.beforeEach(async ({ page }) => {
-  await page.goto(".", { timeout: 60000 });
+  await page.goto(".");
 });
+
 
 test("should add item to cart after login and verify cart content", async ({
   page,
