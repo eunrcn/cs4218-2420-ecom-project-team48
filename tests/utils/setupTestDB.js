@@ -14,6 +14,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const sampleUserData = [{
+    _id: new mongoose.Types.ObjectId(),
     name: "admin",
     email: "admin@admin.com",
     password: await hashPassword("admin"),
@@ -22,6 +23,7 @@ const sampleUserData = [{
     answer: "admin",
     role: 1
 }, {
+    _id: new mongoose.Types.ObjectId(),
     name: "user",
     email: "user@user.com",
     password: await hashPassword("user"),
