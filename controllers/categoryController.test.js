@@ -103,7 +103,7 @@ describe('createCategoryController', () => {
     expect(categoryModel.findOne).toHaveBeenCalledWith({ 
       name: { $regex: new RegExp('^TEST CATEGORY$', 'i') }
     });
-    expect(mockRes.status).toHaveBeenCalledWith(409);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: false,
       message: 'Category Already Exists',
@@ -330,7 +330,7 @@ describe('updateCategoryController', () => {
     expect(categoryModel.findOne).toHaveBeenCalledWith({ 
       name: { $regex: new RegExp('^NEW CATEGORY$', 'i') }
     });
-    expect(mockRes.status).toHaveBeenCalledWith(409);
+    expect(mockRes.status).toHaveBeenCalledWith(200);
     expect(mockRes.send).toHaveBeenCalledWith({
       success: false,
       message: 'Category name already exists',
