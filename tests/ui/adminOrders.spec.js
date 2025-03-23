@@ -31,21 +31,7 @@ async function updateOrderStatus(page, targetStatus) {
         .getByText(status)
         .click();
 
-      const targetStatusElement = page
-        .getByTestId("status-67a21938cf4efddf1e5358d1")
-        .getByTitle(targetStatus);
-
-      await targetStatusElement.waitFor({ state: "visible", timeout: 60000 });
-
-      const isVisible = await targetStatusElement.isVisible();
-      if (!isVisible) {
-        console.log(`Status "${targetStatus}" is not visible.`);
-      }
-
-      await targetStatusElement.hover();
-
-      await targetStatusElement.click();
-
+      await page.getByTitle(targetStatus).locator("div").click();
       await page
         .getByRole("cell", { name: `${targetStatus} ${targetStatus}` })
         .click();
@@ -55,6 +41,7 @@ async function updateOrderStatus(page, targetStatus) {
   }
 }
 test.beforeEach(async ({ page }) => {
+  await page.context().clearCookies();
   await page.goto(".");
 });
 
