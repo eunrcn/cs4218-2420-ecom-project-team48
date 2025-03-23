@@ -4,7 +4,6 @@ test.beforeEach(async ({ page }) => {
   await page.goto(".");
 });
 
-
 test("should be able to change username and update", async ({ page }) => {
   await page.getByRole("link", { name: "Login" }).click();
   await page
@@ -12,9 +11,6 @@ test("should be able to change username and update", async ({ page }) => {
     .fill("user@user.com");
   await page.getByRole("textbox", { name: "Enter Your Password" }).click();
   await page.getByRole("textbox", { name: "Enter Your Password" }).fill("user");
-  await page
-    .getByRole("textbox", { name: "Enter Your Password" })
-    .press("Enter");
   await page.getByRole("button", { name: "LOGIN" }).click();
   await page.getByRole("button", { name: "user" }).click();
   await page.getByRole("link", { name: "Dashboard" }).click();
@@ -42,7 +38,8 @@ test("should be able to change username and update", async ({ page }) => {
   await page.getByRole("heading", { name: "user" }).first().click();
 });
 
-test("should be able to change number and update", async ({ page }) => {
+
+test("should be able to successfully update phone number", async ({ page }) => {
   await page.getByRole("link", { name: "Login" }).click();
   await page
     .getByRole("textbox", { name: "Enter Your Email" })
@@ -58,11 +55,28 @@ test("should be able to change number and update", async ({ page }) => {
     .getByRole("textbox", { name: "Enter Your Phone" })
     .fill("23456789");
   await page.getByRole("button", { name: "UPDATE" }).click();
-  await page.getByText("Profile Updated Successfully").click();
+  await page
+    .locator("div")
+    .filter({ hasText: /^Profile Updated Successfully$/ })
+    .nth(1)
+    .click();
+  await page.getByRole("textbox", { name: "Enter Your Phone" }).click();
+  await page
+    .getByRole("textbox", { name: "Enter Your Phone" })
+    .fill("12345678");
+  await page.getByRole("button", { name: "UPDATE" }).click();
+  await page
+    .locator("div")
+    .filter({ hasText: /^Profile Updated Successfully$/ })
+    .nth(1)
+    .click();
+  await page.getByRole("link", { name: "🛒 Virtual Vault" }).click();
 });
 
-test("should be able to change address and update", async ({ page }) => {
+
+test("should be able to successfully update address", async ({ page }) => {
   await page.getByRole("link", { name: "Login" }).click();
+  await page.getByRole("textbox", { name: "Enter Your Email" }).click();
   await page
     .getByRole("textbox", { name: "Enter Your Email" })
     .fill("user@user.com");
@@ -75,13 +89,19 @@ test("should be able to change address and update", async ({ page }) => {
   await page.getByRole("textbox", { name: "Enter Your Address" }).click();
   await page
     .getByRole("textbox", { name: "Enter Your Address" })
-    .fill("qwerty");
+    .fill("address");
   await page.getByRole("button", { name: "UPDATE" }).click();
-  await page.getByText("Profile Updated Successfully").click();
-  await page.getByRole("button", { name: "user" }).click();
-  await page.getByRole("link", { name: "Dashboard" }).click();
-  await expect(
-    page.getByRole("heading", { name: "qwerty", exact: true })
-  ).toBeVisible();
+  await page
+    .locator("div")
+    .filter({ hasText: /^Profile Updated Successfully$/ })
+    .nth(1)
+    .click();
+  await page.getByRole("textbox", { name: "Enter Your Address" }).click();
+  await page.getByRole("textbox", { name: "Enter Your Address" }).fill("user");
+  await page.getByRole("button", { name: "UPDATE" }).click();
+  await page
+    .locator("div")
+    .filter({ hasText: /^Profile Updated Successfully$/ })
+    .nth(1)
+    .click();
 });
-

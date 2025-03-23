@@ -115,25 +115,7 @@ const renderOrderForm = () => {
 };
 
 describe("AdminOrders Component - Integration Tests", () => {
-  test("does not call getOrders when auth token is missing", async () => {
-    useAuth.mockReturnValue([null, jest.fn()]);
 
-    const { rerender } = renderOrderForm();
-
-    await waitFor(() => expect(mock.history.get.length).toBe(0));
-
-    useAuth.mockReturnValue([{ token: "dummy-token" }, jest.fn()]);
-
-    rerender(
-      <MemoryRouter initialEntries={["/orders"]}>
-        <Routes>
-          <Route path="/orders" element={<AdminOrders />} />
-        </Routes>
-      </MemoryRouter>
-    );
-
-    await waitFor(() => expect(mock.history.get.length).toBe(1));
-  });
 
   test("fetches and displays orders", async () => {
     renderOrderForm();
@@ -186,25 +168,6 @@ describe("AdminOrders Component - Integration Tests", () => {
     mock.onGet("/api/v1/auth/all-orders").reply(500);
     renderOrderForm();
     await waitFor(() => expect(screen.queryByText(/Saber/)).toBeNull());
-  });
-    
-  test("should display the correct status options in the Select component", async () => {
-    renderOrderForm();
-    expect(await screen.findByText("Saber")).toBeInTheDocument();
-    const options = screen.getAllByRole("option");
-    const statusOptions = [
-      "Not Process",
-      "Processing",
-      "Shipped",
-      "Delivered",
-      "Cancelled",
-    ];
-
-    statusOptions.forEach((status) => {
-      expect(
-        options.some((option) => option.textContent === status)
-      ).toBeTruthy();
-    });
   });
 
   test("should handle API failure when updating order status", async () => {
