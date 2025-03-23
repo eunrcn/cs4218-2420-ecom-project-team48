@@ -21,8 +21,9 @@ export default {
     "config/**",
     "routes/**",
     "helpers/**",
+    "!client/**",
     "!**/*.test.js",
-    "**/*.integration.test.js"
+    "{controllers,middlewares,models,config,routes,helpers}/**/*.integration.test.js"
   ],
   "coverageDirectory": "coverage/backend-integration",
   "coverageReporters": ["lcov", "text", "json"],
