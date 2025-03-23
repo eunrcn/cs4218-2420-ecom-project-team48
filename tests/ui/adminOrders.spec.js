@@ -1,25 +1,28 @@
 import { test, expect } from "@playwright/test";
 
-test.beforeEach(async ({ page }) => {
-  await page.goto(".");
-});
-
-test("admin should be able to update order status to not processed", async ({ page }) => {
+async function login(page) {
   await page.getByRole("link", { name: "Login" }).click();
-  await page.getByRole("textbox", { name: "Enter Your Email" }).click();
   await page
     .getByRole("textbox", { name: "Enter Your Email" })
     .fill("admin@admin.com");
-  await page.getByRole("textbox", { name: "Enter Your Password" }).click();
   await page
     .getByRole("textbox", { name: "Enter Your Password" })
     .fill("admin");
   await page.getByRole("button", { name: "LOGIN" }).click();
   await page.getByRole("button", { name: "admin" }).click();
   await page.getByRole("link", { name: "Dashboard" }).click();
+}
+
+async function updateOrderStatus(page, targetStatus) {
   await page.getByRole("link", { name: "Orders" }).click();
 
-  const statuses = ["Shipped", "Not Process", "Processing", "Delivered", "Cancelled"];
+  const statuses = [
+    "Shipped",
+    "Not Process",
+    "Processing",
+    "Delivered",
+    "Cancelled",
+  ];
 
   for (const status of statuses) {
     if (await page.getByText(status).isVisible()) {
@@ -27,31 +30,72 @@ test("admin should be able to update order status to not processed", async ({ pa
         .getByTestId("status-67a21938cf4efddf1e5358d1")
         .getByText(status)
         .click();
-        await page
-          .getByTestId("status-67a21938cf4efddf1e5358d1")
-          .getByTitle("Not Process")
-          .click();
-        await page
-          .getByRole("cell", { name: "Not Process Not Process" })
-          .click();
+
+      const targetStatusElement = page
+        .getByTestId("status-67a21938cf4efddf1e5358d1")
+        .getByTitle(targetStatus);
+
+      await targetStatusElement.waitFor({ state: "visible", timeout: 60000 });
+
+      const isVisible = await targetStatusElement.isVisible();
+      if (!isVisible) {
+        console.log(`Status "${targetStatus}" is not visible.`);
+      }
+
+      await targetStatusElement.hover();
+
+      await targetStatusElement.click();
+
+      await page
+        .getByRole("cell", { name: `${targetStatus} ${targetStatus}` })
+        .click();
+
       break;
     }
   }
+}
+test.beforeEach(async ({ page }) => {
+  await page.goto(".");
+});
+
+test("admin should be able to update order status to not processed", async ({
+  page,
+}) => {
+  await login(page);
+  await updateOrderStatus(page, "Not Process");
+});
+
+test("admin should be able to update order status to processing", async ({
+  page,
+}) => {
+  await login(page);
+  await updateOrderStatus(page, "Processing");
+});
+
+test("admin should be able to update order status to shipped", async ({
+  page,
+}) => {
+  await login(page);
+  await updateOrderStatus(page, "Shipped");
+});
+
+test("admin should be able to update order status to delivered", async ({
+  page,
+}) => {
+  await login(page);
+  await updateOrderStatus(page, "Delivered");
+});
+
+test("admin should be able to update order status to cancelled", async ({
+  page,
+}) => {
+  await login(page);
+  await updateOrderStatus(page, "Cancelled");
 });
 
 test("admin should be able to view orders", async ({ page }) => {
-  await page.getByRole("link", { name: "Login" }).click();
-  await page.getByRole("textbox", { name: "Enter Your Email" }).click();
-  await page
-    .getByRole("textbox", { name: "Enter Your Email" })
-    .fill("admin@admin.com");
-  await page.getByRole("textbox", { name: "Enter Your Password" }).click();
-  await page
-    .getByRole("textbox", { name: "Enter Your Password" })
-    .fill("admin");
-  await page.getByRole("button", { name: "LOGIN" }).click();
-  await page.getByRole("button", { name: "admin" }).click();
-  await page.getByRole("link", { name: "Dashboard" }).click();
+  await login(page);
+
   await page.getByRole("link", { name: "Orders" }).click();
 
   await expect(page.getByText("All Orders#StatusBuyer")).toBeVisible();
@@ -77,16 +121,11 @@ test("admin should be able to view orders", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("admin should be able to add and remove items from cart", async ({ page }) => {
-  await page.getByRole("link", { name: "Login" }).click();
-  await page
-    .getByRole("textbox", { name: "Enter Your Email" })
-    .fill("admin@admin.com");
-  await page.getByRole("textbox", { name: "Enter Your Password" }).click();
-  await page
-    .getByRole("textbox", { name: "Enter Your Password" })
-    .fill("admin");
-  await page.getByRole("button", { name: "LOGIN" }).click();
+test("admin should be able to add and remove items from cart", async ({
+  page,
+}) => {
+  await login(page);
+  await page.getByRole("link", { name: "🛒 Virtual Vault" }).click();
   await page.locator(".card-name-price > button:nth-child(2)").first().click();
   await page
     .locator(
