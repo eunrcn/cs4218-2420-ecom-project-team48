@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import app from "../../app";
-import productModel from "../../models/productModel";
-import userModel from "../../models/userModel";
+import app from "../app";
+import productModel from "../models/productModel";
+import userModel from "../models/userModel";
 import JWT from "jsonwebtoken";
 import request from "supertest";
 import { expect } from "@playwright/test";
@@ -31,6 +31,15 @@ const sampleUserData = [{
   address: "admin",
   answer: "admin",
   role: 1
+}, {
+  _id: new mongoose.Types.ObjectId(),
+  name: "user",
+  email: "user@user.com",
+  password: "user",
+  phone: "12345678",
+  address: "user",
+  answer: "user",
+  role: 0
 }];
 
 beforeAll(async () => {
@@ -41,7 +50,9 @@ beforeAll(async () => {
   // Add user access & generate JWT token
   await userModel.insertMany(sampleUserData);
   adminToken = await JWT.sign({ _id: sampleUserData[0]._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+  userToken = await JWT.sign({ _id: sampleUserData[1]._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 });
+
 
 
 afterAll(async () => {
@@ -57,6 +68,94 @@ afterEach(async () => {
   await productModel.deleteMany();
 });
 
+describe('Product Management Integration Test', () => {
+  it("should create a product", async () => {
+    await request(app).post("/api/v1/product/create-product")
+    .set("Authorization", adminToken)
+    .field('name', "Milo drink")
+    .field('description', "A delicious drink")
+    .field('price', "10")
+    .field('category', new mongoose.Types.ObjectId().toString())
+    .field('quantity', "10")
+    .field('shipping', "true")
+    .expect(201);
+
+    const product = await productModel.findOne({ name: "Milo drink" });
+    expect(product).not.toBeNull();
+    expect(product.name).toBe("Milo drink");
+    expect(product.description).toBe("A delicious drink");
+    expect(product.price).toBe(10);
+    expect(product.quantity).toBe(10);
+    expect(product.shipping).toBe(true);
+  });
+
+  it("should not be allowed to create a product using user token", async () => {
+    const res = await request(app).post("/api/v1/product/create-product")
+    .set("Authorization", userToken)
+    .field('name', "Milo drink")
+    .field('description', "A delicious drink")
+    .field('price', "10")
+    .field('category', new mongoose.Types.ObjectId().toString())
+    .field('quantity', "10")
+    .field('shipping', "true")
+    .expect(401);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('Unauthorized Access');
+  });
+
+  it("should update a product", async () => {
+    await request(app).put("/api/v1/product/update-product/" + mockProducts[2]._id)
+    .set("Authorization", adminToken)
+    .field('name', "Test Laptop")
+    .field('description', "A test laptop")
+    .field('price', "10")
+    .field('category', mockProducts[2].category.toString())
+    .field('quantity', "10")
+    .field('shipping', "true")
+    .expect(201);
+
+    const product = await productModel.findById(mockProducts[2]._id);
+    expect(product.name).toBe("Test Laptop");
+    expect(product.description).toBe("A test laptop");
+    expect(product.price).toBe(10);
+    expect(product.quantity).toBe(10);
+    expect(product.shipping).toBe(true);
+  });
+
+  it("should not be allowed to update a product using user token", async () => {
+    const res = await request(app).put("/api/v1/product/update-product/" + mockProducts[2]._id)
+    .set("Authorization", userToken)
+    .field('name', "Test Laptop")
+    .field('description', "A test laptop")
+    .field('price', "10")
+    .field('category', mockProducts[2].category.toString())
+    .field('quantity', "10")
+    .field('shipping', "true")
+    .expect(401);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('Unauthorized Access');
+  });
+
+  it("should delete a product", async () => {
+    await request(app).delete("/api/v1/product/delete-product/" + mockProducts[2]._id)
+    .set("Authorization", adminToken)
+    .expect(200);
+
+    const product = await productModel.findById(mockProducts[2]._id);
+    expect(product).toBeNull();
+  });
+
+  it("should not be allowed to delete a product using user token", async () => {
+    const res = await request(app).delete("/api/v1/product/delete-product/" + mockProducts[2]._id)
+    .set("Authorization", userToken)
+    .expect(401);
+
+    expect(res.body.success).toBe(false);
+    expect(res.body.message).toBe('Unauthorized Access');
+  });
+});
 
 
 describe("Search Product Integration Test", () => {
@@ -167,7 +266,8 @@ describe("Search Product Integration Test", () => {
   it("should delete a product and not find it via search", async () => {
     //Delete product
     await request(app).delete("/api/v1/product/delete-product/" + mockProducts[2]._id)
-      .set("Authorization", adminToken);
+      .set("Authorization", adminToken)
+      .expect(200);
 
     //Should not find any matching products
     const res = await request(app).get("/api/v1/product/search/Laptop");
@@ -175,7 +275,6 @@ describe("Search Product Integration Test", () => {
     expect(res.body).toHaveLength(0);
   });
 });
-
 
 
 describe("Related Product Integration Test", () => {
@@ -253,7 +352,8 @@ describe("Related Product Integration Test", () => {
   it("should delete a product and ensure it no longer appears as a related product", async () => {
     //Delete novel
     await request(app).delete("/api/v1/product/delete-product/" + mockProducts[1]._id)
-      .set("Authorization", adminToken);
+      .set("Authorization", adminToken)
+      .expect(200);
 
     //Should not find any related products
     const res = await request(app).get("/api/v1/product/related-product/" + mockProducts[0]._id + "/" + mockProducts[0].category);
@@ -313,7 +413,8 @@ describe("Product Count Integration Test", () => {
   it("should delete a product and not decrease the product count", async () => {
     //Delete product
     await request(app).delete("/api/v1/product/delete-product/" + mockProducts[2]._id)
-      .set("Authorization", adminToken);
+      .set("Authorization", adminToken)
+      .expect(200);
 
     //Should not find any matching products
     const res = await request(app).get("/api/v1/product/product-count");
