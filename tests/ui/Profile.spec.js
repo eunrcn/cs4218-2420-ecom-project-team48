@@ -102,3 +102,8 @@ test("should be able to change username and update", async ({ page }) => {
   await page.getByRole("link", { name: "Dashboard" }).click();
   await page.getByRole("heading", { name: "test user" }).first().click();
 });
+
+
+// 2 more 
+
+
