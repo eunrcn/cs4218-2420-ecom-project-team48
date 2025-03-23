@@ -1,4 +1,3 @@
-// tests/integration/categoryController.integration.test.js
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import app from "../app";
