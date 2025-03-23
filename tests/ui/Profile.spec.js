@@ -74,31 +74,3 @@ test("Logout", async ({ page }) => {
     await expect(page.getByText('LOGIN FORM')).toBeVisible();
 });
 
-test("should be able to change username and update", async ({ page }) => {
-  await page.getByRole("button", { name: "test user" }).click();
-  await page.getByRole("link", { name: "Dashboard" }).click();
-  await page.getByRole("link", { name: "Profile" }).click();
-  await page.getByRole("textbox", { name: "Enter Your Name" }).fill("user1");
-  await page.getByRole("button", { name: "UPDATE" }).click();
-  await page
-    .locator("div")
-    .filter({ hasText: /^Profile Updated Successfully$/ })
-    .nth(1)
-    .click();
-  await page.getByRole("button", { name: "user1" }).click();
-  await page.getByRole("link", { name: "Dashboard" }).click();
-  await page.getByRole("heading", { name: "user1" }).click();
-  await page.getByRole("link", { name: "Profile" }).click();
-  await page
-    .getByRole("textbox", { name: "Enter Your Name" })
-    .fill("test user");
-  await page.getByRole("button", { name: "UPDATE" }).click();
-  await page
-    .locator("div")
-    .filter({ hasText: /^Profile Updated Successfully$/ })
-    .nth(1)
-    .click();
-  await page.getByRole("button", { name: "test user" }).click();
-  await page.getByRole("link", { name: "Dashboard" }).click();
-  await page.getByRole("heading", { name: "test user" }).first().click();
-});

@@ -163,4 +163,37 @@ describe("AdminOrders Component - Unit Tests", () => {
     expect(await screen.findByText("Failed")).toBeInTheDocument();
     expect(screen.getByText("Magic Item")).toBeInTheDocument();
   });
+
+  test("does not call getOrders when auth token is missing", async () => {
+    useAuth.mockReturnValue([null, jest.fn()]);
+
+    const { rerender } = renderOrderForm();
+
+    await waitFor(() => expect(mock.history.get.length).toBe(0));
+
+    useAuth.mockReturnValue([{ token: "dummy-token" }, jest.fn()]);
+
+    renderOrderForm();
+
+    await waitFor(() => expect(mock.history.get.length).toBe(1));
+  });
+
+  test("should display the correct status options in the Select component", async () => {
+    renderOrderForm();
+    expect(await screen.findByText("Saber")).toBeInTheDocument();
+    const options = screen.getAllByRole("option");
+    const statusOptions = [
+      "Not Process",
+      "Processing",
+      "Shipped",
+      "Delivered",
+      "Cancelled",
+    ];
+
+    statusOptions.forEach((status) => {
+      expect(
+        options.some((option) => option.textContent === status)
+      ).toBeTruthy();
+    });
+  });
 });
