@@ -164,8 +164,8 @@ describe("User Profile Integration Test", () => {
 
     fireEvent.click(screen.getByText('John Doe'));
     fireEvent.click(screen.getByText('Logout'));
-    await waitFor(() => screen.getByText("LOGIN FORM"));
-
+    const loginForm = await screen.findByText("LOGIN FORM");
+    expect(loginForm).toBeInTheDocument();
     
   });
 
