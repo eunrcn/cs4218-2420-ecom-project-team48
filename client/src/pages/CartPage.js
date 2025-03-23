@@ -84,11 +84,11 @@ const CartPage = () => {
           <div className="col-md-12">
             <h1 className="text-center bg-light p-2 mb-1">
               {!auth?.user
-                ? "Hello Guest"
-                : `Hello  ${auth?.token && auth?.user?.name}`}
+                ? "Hello Guest,"
+                : `Hello  ${auth?.token && auth?.user?.name},`}
               <p className="text-center">
                 {cart?.length
-                  ? `You Have ${cart.length} items in your cart ${
+                  ? `You have ${cart.length} item(s) in your cart. ${
                       auth?.token ? "" : "please login to checkout !"
                     }`
                   : " Your Cart Is Empty"}
@@ -134,7 +134,7 @@ const CartPage = () => {
               {auth?.user?.address ? (
                 <>
                   <div className="mb-3">
-                    <h4>Current Address</h4>
+                    <h4>Current Address:</h4>
                     <h5>{auth?.user?.address}</h5>
                     <button
                       className="btn btn-outline-warning"
@@ -162,7 +162,7 @@ const CartPage = () => {
                         })
                       }
                     >
-                      Plase Login to checkout
+                      Please login to checkout
                     </button>
                   )}
                 </div>

@@ -21,7 +21,7 @@ test("should add item to cart after login and verify cart content", async ({
   await page.locator(".card-name-price > button:nth-child(2)").first().click();
   await page.getByRole("link", { name: "Cart" }).click();
   await expect(page.locator("h1")).toContainText(
-    "Hello userYou Have 1 items in your cart"
+    "Hello user,You have 1 item(s) in your cart."
   );
 });
 
