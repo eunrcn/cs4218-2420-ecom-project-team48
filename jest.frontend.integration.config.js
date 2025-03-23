@@ -27,7 +27,14 @@ export default {
     "!client/src/_site/**",
     "!client/src/*.js",
     "!**/*.test.js",
-    "**/*.integration.test.js"
+    "client/src/**/*.integration.test.js",
+    "!controllers/**",
+    "!middlewares/**",
+    "!models/**",
+    "!config/**",
+    "!routes/**",
+    "!helpers/**",
+    "!tests/integration/**"
   ],
   "coverageDirectory": "coverage/frontend-integration",
   "coverageReporters": ["lcov", "text", "json"],
