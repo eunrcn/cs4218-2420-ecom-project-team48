@@ -217,7 +217,7 @@ describe("HomePage integration", () => {
     fireEvent.click(cartButtons[0]);
     
     // check that product is in cart
-    expect(screen.getByText(/You Have 1 items in your cart/i)).toBeInTheDocument();
+    expect(screen.getByText(/You have 1 item\(s\) in your cart./i)).toBeInTheDocument();
 
     // 6. remove product from cart
     const removeButton = screen.getByRole("button", { name: "Remove" });
