@@ -12,7 +12,7 @@ export const createCategoryController = async (req, res) => {
       name: { $regex: new RegExp(`^${trimmedName}$`, 'i') }
     });
     if (existingCategory) {
-      return res.status(409).send({
+      return res.status(200).send({
         success: false,
         message: "Category Already Exists",
       });
@@ -75,7 +75,7 @@ export const updateCategoryController = async (req, res) => {
     });
     
     if (existingCategory) {
-      return res.status(409).send({
+      return res.status(200).send({
         success: false,
         message: "Category name already exists",
       });
