@@ -143,6 +143,69 @@ test.describe("Create Category Page", () => {
     ).toBeVisible();
   });
 
+  test("should handle API errors gracefully", async ({ page }) => {
+    await loginAsAdmin(page);
+    await goToCategoryPage(page);
+
+    await page.route("**/api/v1/category/create-category", (route) => {
+      return route.fulfill({
+        status: 500,
+        body: JSON.stringify({ success: false, message: "Server error" }),
+      });
+    });
+
+    await createCategory(page, "Error Test Category");
+
+    await expect(page.getByText("Something went wrong")).toBeVisible();
+  });
+
+  test("should show error when creating a duplicate category", async ({
+    page,
+  }) => {
+    await loginAsAdmin(page);
+    await goToCategoryPage(page);
+
+    await createCategory(page, "Electronics");
+
+    await expect(page.getByText("Category already exists")).toBeVisible();
+  });
+
+  test("should show error when creating a blank category", async ({ page }) => {
+    await loginAsAdmin(page);
+    await goToCategoryPage(page);
+
+    await createCategory(page, "");
+
+    await expect(
+      page.getByText("Something went wrong in input form")
+    ).toBeVisible();
+  });
+
+  test("should show error when updating to a duplicate category", async ({
+    page,
+  }) => {
+    await loginAsAdmin(page);
+    await goToCategoryPage(page);
+
+    await expect(page.getByRole("cell", { name: "Electronics" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Edit" }).first().click();
+    await page
+      .getByRole("dialog")
+      .getByRole("textbox", { name: "Enter new category" })
+      .click();
+    await page
+      .getByRole("dialog")
+      .getByRole("textbox", { name: "Enter new category" })
+      .fill("Book");
+    await page
+      .getByRole("dialog")
+      .getByRole("button", { name: "Submit" })
+      .click();
+
+    await expect(page.getByText("Category name already exists")).toBeVisible();
+  });
+
   test("should not allow regular user to access create category page", async ({
     page,
   }) => {
@@ -161,31 +224,4 @@ test.describe("Create Category Page", () => {
       page.getByRole("heading", { name: "LOGIN FORM" })
     ).toBeVisible();
   });
-
-  test("should handle API errors gracefully", async ({ page }) => {
-    await loginAsAdmin(page);
-    await goToCategoryPage(page);
-
-    await page.route("**/api/v1/category/create-category", (route) => {
-      return route.fulfill({
-        status: 500,
-        body: JSON.stringify({ success: false, message: "Server error" }),
-      });
-    });
-
-    await createCategory(page, "Error Test Category");
-
-    await expect(page.getByText("Something went wrong")).toBeVisible();
-  });
-
-  // test("should show error when creating a duplicate category", async ({
-  //   page,
-  // }) => {
-  //   await loginAsAdmin(page);
-  //   await goToCategoryPage(page);
-
-  //   await createCategory(page, "Electronics");
-
-  //   await expect(page.getByText("Category already exists")).toBeVisible();
-  // });
 });
