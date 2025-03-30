@@ -35,25 +35,17 @@ const CartPage = () => {
   //delete item
   const removeCartItem = (pid) => {
     try {
-      setCart((prevCart) => {
-        const updatedCart = [...prevCart]; // Copy the array
-        const index = updatedCart.findIndex((item) => item._id === pid);
-
-        if (index !== -1) {
-          updatedCart.splice(index, 1); // Remove only one instance
-        }
-
-        localStorage.setItem("cart", JSON.stringify(updatedCart));
-        return updatedCart;
-      });
-
+      let myCart = [...cart];
+      let index = myCart.findIndex((item) => item._id === pid);
+      myCart.splice(index, 1);
+      setCart(myCart);
+      localStorage.setItem("cart", JSON.stringify(myCart));
       toast.success("Item removed from cart");
     } catch (error) {
       console.log(error);
       toast.success("Error while removing item from cart");
     }
   };
-
   //get payment gateway token
   const getToken = async () => {
     try {
