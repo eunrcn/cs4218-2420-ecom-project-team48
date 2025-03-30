@@ -86,12 +86,13 @@ const HomePage = () => {
     }
     setChecked(all);
   };
+  
   useEffect(() => {
-    if (!checked.length || !radio.length) getAllProducts();
-  }, [checked.length, radio.length]);
-
-  useEffect(() => {
-    if (checked.length || radio.length) filterProduct();
+    if (checked.length > 0 || radio.length > 0) {
+      filterProduct();
+    } else {
+      getAllProducts();
+    }
   }, [checked, radio]);
 
   //get filtered product
