@@ -15,17 +15,16 @@ const Contact = () => {
         <div className="col-md-4">
           <h1 className="bg-dark p-2 text-white text-center">CONTACT US</h1>
           <p className="text-justify mt-2">
-            For any query or info about product, feel free to call anytime. We are
-            available 24X7.  
+            For any query or info about product, feel free to call anytime.
           </p>
           <p className="mt-3">
-            <BiMailSend /> : www.help@ecommerceapp.com
+            <BiMailSend /> : saber@nus.edu.sg
           </p>
           <p className="mt-3">
-            <BiPhoneCall /> : 012-3456789
+            <BiPhoneCall /> : (+65) 9995 2134
           </p>
           <p className="mt-3">
-            <BiSupport /> : 1800-0000-0000 (toll free)
+            <BiSupport /> : 1800-1234-5678 (toll free)
           </p>
         </div>
       </div>
