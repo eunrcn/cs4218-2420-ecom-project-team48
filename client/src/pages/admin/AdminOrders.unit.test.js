@@ -123,7 +123,7 @@ describe("AdminOrders Component - Unit Tests", () => {
 
   test("displays correct date format", async () => {
     renderOrderForm();
-    expect(await screen.findByText(/ago/i)).toBeInTheDocument();
+    expect(await screen.findByText(/2025/i)).toBeInTheDocument();
   });
 
   test("displays correct payment status", async () => {

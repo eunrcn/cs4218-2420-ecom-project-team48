@@ -40,11 +40,12 @@ const CartPage = () => {
       myCart.splice(index, 1);
       setCart(myCart);
       localStorage.setItem("cart", JSON.stringify(myCart));
+      toast.success("Item removed from cart");
     } catch (error) {
       console.log(error);
+      toast.success("Error while removing item from cart");
     }
   };
-
   //get payment gateway token
   const getToken = async () => {
     try {
@@ -175,9 +176,6 @@ const CartPage = () => {
                     <DropIn
                       options={{
                         authorization: clientToken,
-                        paypal: {
-                          flow: "vault",
-                        },
                       }}
                       onInstance={(instance) => setInstance(instance)}
                     />
@@ -187,7 +185,7 @@ const CartPage = () => {
                       onClick={handlePayment}
                       disabled={loading || !instance || !auth?.user?.address}
                     >
-                      {loading ? "Processing ...." : "Make Payment"}
+                      {loading ? "Processing...." : "Make Payment"}
                     </button>
                   </>
                 )}
