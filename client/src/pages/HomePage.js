@@ -69,7 +69,15 @@ const HomePage = () => {
       setLoading(true);
       const { data } = await axios.get(`/api/v1/product/product-list/${page}`);
       setLoading(false);
-      setProducts([...products, ...data?.products]);
+
+      // fetch next page of filtered products
+      if (checked.length > 0 || radio.length > 0) {
+        filterProduct();
+
+      // fetch next page of all products
+      } else {
+        setProducts([...products, ...data?.products]);
+      }
     } catch (error) {
       console.log(error);
       setLoading(false);
@@ -86,17 +94,20 @@ const HomePage = () => {
     }
     setChecked(all);
   };
-  useEffect(() => {
-    if (!checked.length || !radio.length) getAllProducts();
-  }, [checked.length, radio.length]);
 
   useEffect(() => {
-    if (checked.length || radio.length) filterProduct();
+    if (checked.length > 0 || radio.length > 0) {
+      filterProduct();
+    } else {
+      getAllProducts();
+    }
   }, [checked, radio]);
 
   //get filtered product
   const filterProduct = async () => {
     try {
+      setPage(1); // reset page
+
       const { data } = await axios.post("/api/v1/product/product-filters", {
         checked,
         radio,
@@ -106,6 +117,7 @@ const HomePage = () => {
       console.log(error);
     }
   };
+
   return (
     <Layout title={"ALL Products - Best offers "}>
       {/* banner image */}
