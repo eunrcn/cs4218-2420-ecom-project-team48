@@ -45,9 +45,9 @@ describe("Contact Page Component", () => {
 
   test("displays correct contact details (email, phone, and support number)", async () => {
     renderContactPage();
-    expect(await screen.findByText(/www.help@ecommerceapp.com/i)).toBeTruthy();
-    expect(await screen.findByText(/012-3456789/i)).toBeTruthy();
-    expect(await screen.findByText(/1800-0000-0000/i)).toBeTruthy();
+    expect(await screen.findByText(/saber@nus.edu.sg/i)).toBeTruthy();
+    expect(await screen.findByText(/9995 2134/i)).toBeTruthy();
+    expect(await screen.findByText(/1800-1234-5678/i)).toBeTruthy();
   });
 
   test("renders the contact image correctly", async () => {

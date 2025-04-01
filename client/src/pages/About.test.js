@@ -34,12 +34,12 @@ describe("About Page Component", () => {
   
   test("about component renders correctly", async () => {
     renderAboutPage();
-    expect(await screen.findByText(/Add text/i)).toBeTruthy();
+    expect(await screen.findByText(/Welcome to SABER/i)).toBeTruthy();
   });
 
   test("verifies if the Layout component wraps the About page", async () => {
     renderAboutPage();
-    expect(await screen.findByText(/Add text/i)).toBeTruthy();
+    expect(await screen.findByText(/Welcome to SABER/i)).toBeTruthy();
   });
 
   test("checks if the about page displays an image", async () => {
